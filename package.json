@@ -1,0 +1,26 @@
+{
+  "name": "algarrobo-connect-desktop",
+  "version": "1.0.0",
+  "description": "Sistema de Administración de Cabañas Algarrobo Connect (Electron + MySQL)",
+  "main": "main.js",
+  "scripts": {
+    "db:start": "bash ./start-db.sh",
+    "start": "bash ./start-db.sh && electron . --no-sandbox --no-zygote --disable-gpu --in-process-gpu",
+    "test:db": "node test-db.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/perroelao2/avancecapstone.git"
+  },
+  "keywords": [
+    "electron",
+    "mysql",
+    "algarrobo",
+    "cabanas"
+  ],
+  "type": "commonjs",
+  "dependencies": {
+    "electron": "^41.2.1",
+    "mysql2": "^3.22.0"
+  }
+}

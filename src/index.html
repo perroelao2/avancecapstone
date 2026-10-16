@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cabañas Algarrobo Connect - Administración</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <!-- Pantalla de Inicio de Sesion y Registro -->
+  <div id="view-login" class="login-wrapper">
+    <div class="login-center">
+      <!-- Tarjeta para iniciar sesion -->
+      <div id="login-box" class="login-card">
+        <h1>Iniciar Sesión</h1>
+        <form id="form-login">
+          <input type="email" id="login-correo" class="login-input" placeholder="Correo electrónico" value="admin@algarroboconnect.cl" required />
+          <input type="password" id="login-pass" class="login-input" placeholder="Contraseña" value="admin123" required />
+          <div>
+            <button type="submit" class="btn-pill btn-primary login-btn">Iniciar sesión</button>
+          </div>
+          <div>
+            <a id="link-show-register" class="login-link">Crear cuenta</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tarjeta para crear una cuenta nueva -->
+      <div id="register-box" class="login-card hidden">
+        <h1>Crear Cuenta</h1>
+        <form id="form-register">
+          <input type="text" id="reg-nombre" class="login-input" placeholder="Nombre completo" required />
+          <input type="email" id="reg-correo" class="login-input" placeholder="Correo electrónico" required />
+          <input type="password" id="reg-pass" class="login-input" placeholder="Contraseña" required />
+          <input type="text" id="reg-telefono" class="login-input" placeholder="Teléfono de contacto" />
+          <select id="reg-rol" class="login-input"></select>
+          <select id="reg-comuna" class="login-input"></select>
+          <div>
+            <button type="submit" class="btn-pill btn-primary login-btn">Registrarse</button>
+          </div>
+          <div>
+            <a id="link-back-login" class="login-link">Volver a Iniciar Sesión</a>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="bottom-blue-bar"></div>
+  </div>
+
+  <!-- Contenedor principal que se muestra despues de iniciar sesion -->
+  <div id="app-shell" class="hidden" style="display:flex; flex-direction:column; min-height:100vh;">
+
+    <!-- Barra de navegacion superior -->
+    <header class="navbar">
+      <div class="nav-left">
+        <div class="brand-logo" data-nav="cabanas">
+          <svg viewBox="0 0 64 64">
+            <path d="M32 6L6 28h8v28h36V28h8L32 6zm0 9.5L48 29v21H16V29l16-13.5z"/>
+            <rect x="26" y="34" width="12" height="16"/>
+            <rect x="20" y="24" width="8" height="6"/>
+            <rect x="36" y="24" width="8" height="6"/>
+          </svg>
+          <span>Cabañas Algarrobo</span>
+        </div>
+        <nav class="nav-links">
+          <span class="nav-link" data-nav="cabanas">Inicio</span>
+          <span class="nav-link active" data-nav="cabanas">Cabañas</span>
+          <span class="nav-link" data-nav="inventario">Inventario</span>
+        </nav>
+      </div>
+      <div class="nav-right">
+        <div class="user-pill" id="btn-logout" title="Cerrar sesión">
+          <div class="user-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+            </svg>
+          </div>
+          <span id="nav-user-label">Administrador</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Banner con foto de fondo y titulo de la vista actual -->
+    <section id="hero-banner" class="hero-banner hero-cabins">
+      <div class="hero-overlay-box">
+        <h2 id="hero-title">Cabañas</h2>
+        <p id="hero-subtitle">Administración de Cabañas</p>
+      </div>
+    </section>
+
+    <!-- Vista 1: Listado y buscador de Cabañas -->
+    <div id="section-cabanas">
+      <div class="toolbar-section">
+        <div class="search-box">
+          <input type="text" id="search-cabanas" placeholder="Buscar cabaña..." />
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </div>
+        <button id="btn-open-add-cabana" class="btn-pill btn-primary" style="min-width:210px;">Agregar Cabaña</button>
+        <button class="btn-pill btn-primary" data-goto="inventario" style="min-width:210px;">Inventario de Cabañas</button>
+      </div>
+      <div class="content-container">
+        <div id="cabanas-cards-list" class="cards-stack"></div>
+      </div>
+    </div>
+
+    <!-- Vista 2: Formulario para Agregar o Editar una Cabaña -->
+    <div id="section-cabana-form" class="content-container hidden">
+      <div class="split-editor">
+        <!-- Lado izquierdo: vista previa de las 3 imagenes y carga de fotos -->
+        <div class="left-gallery-panel">
+          <div id="cabana-form-gallery" class="gallery-preview-3"></div>
+          <button type="button" id="btn-add-foto-file" class="btn-pill btn-primary" style="min-width:210px;">Agregar Imagen</button>
+          <div style="width:100%; margin-top:8px;">
+            <label style="font-size:12px; font-weight:700; color:#334;">Enlaces de fotografías:</label>
+            <input type="text" id="cab-foto-1" class="form-control" style="width:100%; margin-top:4px; font-size:12px;" placeholder="Imagen principal" />
+            <input type="text" id="cab-foto-2" class="form-control" style="width:100%; margin-top:6px; font-size:12px;" placeholder="Imagen secundaria 1" />
+            <input type="text" id="cab-foto-3" class="form-control" style="width:100%; margin-top:6px; font-size:12px;" placeholder="Imagen secundaria 2" />
+          </div>
+        </div>
+
+        <!-- Lado derecho: formulario con los datos de la cabaña -->
+        <div class="form-blue-card">
+          <h3>Datos de la Cabaña</h3>
+          <form id="form-cabana">
+            <input type="hidden" id="cab-id" />
+
+            <div class="form-row">
+              <label>Nombre:</label>
+              <input type="text" id="cab-nombre" class="form-control" placeholder="Ej: Cabaña El Canelo" required />
+            </div>
+
+            <div class="form-row">
+              <label>Dirección:</label>
+              <input type="text" id="cab-ubicacion" class="form-control" placeholder="Ej: Av. Alessandri 450, Algarrobo" required />
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-row" style="margin-bottom:0;">
+                <label>Cantidad de Personas:</label>
+                <input type="number" id="cab-capacidad" class="form-control" min="1" value="4" required />
+              </div>
+              <div class="form-row" style="margin-bottom:0;">
+                <label>Precio por Noche:</label>
+                <input type="number" id="cab-precio" class="form-control" min="0" step="1000" value="55000" required />
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-row" style="margin-bottom:0;">
+                <label>Sector:</label>
+                <select id="cab-sector" class="form-control"></select>
+              </div>
+              <div class="form-row" style="margin-bottom:0;">
+                <label>Estado:</label>
+                <select id="cab-estado" class="form-control"></select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label>Comuna:</label>
+              <select id="cab-comuna" class="form-control"></select>
+            </div>
+
+            <div class="form-row" style="align-items:flex-start;">
+              <label style="padding-top:10px;">Descripción y Reglas:</label>
+              <textarea id="cab-reglas" class="form-control" placeholder="Ingresa la descripción o reglas de la cabaña..."></textarea>
+            </div>
+
+            <div class="form-row" style="align-items:flex-start;">
+              <label style="padding-top:8px;">Comodidades:</label>
+              <div id="cab-comodidades-checks" class="amenities-check-grid" style="flex:1;"></div>
+            </div>
+
+            <div class="form-actions-bottom">
+              <button type="submit" id="btn-submit-cabana" class="btn-pill btn-primary" style="min-width:210px;">Crear</button>
+              <button type="button" id="btn-cancel-cabana" class="btn-pill btn-danger" style="min-width:210px;">Cancelar</button>
+            </div>
+          </form>
+
+          <!-- Seccion adicional al editar una cabaña: Mantenciones y Bloqueos de Fechas -->
+          <div id="cabana-extra-bd-panels" class="hidden">
+            <div class="form-Blue-section-title">Mantenciones y Bloqueos de Fechas</div>
+            <div class="form-grid-2">
+              <!-- Historial de mantenciones -->
+              <div class="mini-list-box">
+                <strong>Historial de Mantenciones</strong>
+                <div id="cab-mantenciones-list" style="margin:8px 0;"></div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                  <input type="text" id="new-mant-desc" class="form-control" placeholder="Detalle del trabajo" style="padding:6px 10px; font-size:12px;" />
+                  <input type="number" id="new-mant-costo" class="form-control" placeholder="Costo $" style="padding:6px 10px; font-size:12px; max-width:110px;" />
+                  <input type="date" id="new-mant-fecha" class="form-control" style="padding:6px 10px; font-size:12px;" />
+                  <button type="button" id="btn-add-mantencion" class="btn-pill btn-primary btn-sm">Agregar</button>
+                </div>
+              </div>
+              <!-- Fechas bloqueadas -->
+              <div class="mini-list-box">
+                <strong>Fechas Bloqueadas</strong>
+                <div id="cab-bloqueos-list" style="margin:8px 0;"></div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                  <input type="date" id="new-bloq-desde" class="form-control" style="padding:6px 10px; font-size:12px;" />
+                  <input type="date" id="new-bloq-hasta" class="form-control" style="padding:6px 10px; font-size:12px;" />
+                  <input type="text" id="new-bloq-motivo" class="form-control" placeholder="Motivo del bloqueo" style="padding:6px 10px; font-size:12px;" />
+                  <button type="button" id="btn-add-bloqueo" class="btn-pill btn-primary btn-sm">Bloquear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista 3: Inventario de las Cabañas -->
+    <div id="section-inventario" class="content-container hidden">
+      <div class="report-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="color:var(--brand-blue);">Inventario de Cabañas</h3>
+          <button class="btn-pill btn-secondary btn-sm" data-goto="cabanas">Volver a Cabañas</button>
+        </div>
+        <form id="form-inventario" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:20px;">
+          <input type="hidden" id="inv-id" />
+          <input type="text" id="inv-nombre" class="form-control" placeholder="Artículo (ej: Juego de sábanas)" required />
+          <input type="number" id="inv-cantidad" class="form-control" placeholder="Cantidad" min="1" value="1" required />
+          <input type="text" id="inv-ubicacion" class="form-control" placeholder="Ubicación (ej: Cocina)" />
+          <select id="inv-cabana" class="form-control"></select>
+          <select id="inv-categoria" class="form-control"></select>
+          <input type="text" id="inv-obs" class="form-control" placeholder="Observaciones" />
+          <button type="submit" class="btn-pill btn-primary btn-sm">Agregar al Inventario</button>
+        </form>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Artículo</th>
+              <th>Cantidad</th>
+              <th>Ubicación</th>
+              <th>Cabaña</th>
+              <th>Categoría</th>
+              <th>Observación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="inv-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bottom-blue-bar" style="margin-top:auto;"></div>
+  </div>
+
+  <!-- Contenedor para mostrar avisos flotantes en la esquina inferior derecha -->
+  <div id="toast" class="toast-msg hidden"></div>
+
+  <script src="./renderer.js"></script>
+</body>
+</html>
