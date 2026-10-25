@@ -1,0 +1,122 @@
+{
+  "p1": {
+    "ok": true,
+    "metric": "D, I, CS",
+    "timeMs": 39,
+    "desc": "20 inserts simultáneos completados en 39 ms sin colisiones ni deadlocks."
+  },
+  "p2": {
+    "ok": true,
+    "metric": "D, CS",
+    "timeMs": 6,
+    "desc": "1.000 registros insertados por lote en 6 ms (1000 confirmados)."
+  },
+  "p3": {
+    "ok": true,
+    "metric": "D, I",
+    "timeMs": 1,
+    "desc": "INSERT basado en SELECT ejecutado en 1 ms (2 filas insertadas)."
+  },
+  "p4": {
+    "ok": true,
+    "metric": "D, I",
+    "timeMs": 1,
+    "desc": "Subconsulta promedio ejecutada en 1 ms (1 cabañas sobre la media)."
+  },
+  "p5": {
+    "ok": true,
+    "metric": "D, I",
+    "timeMs": 1,
+    "desc": "Diferencia de conjuntos con LEFT JOIN en 1 ms (1 usuarios sin reservas)."
+  },
+  "p6": {
+    "ok": true,
+    "metric": "D",
+    "timeMs": 2,
+    "desc": "Exportación a CSV generada en 2 ms (2 registros volcados al archivo)."
+  },
+  "p7": {
+    "ok": true,
+    "metric": "D, I",
+    "timeMs": 1,
+    "desc": "Funciones de agregación y escalares evaluadas en 1 ms (Total: 2, Suma: $335000)."
+  },
+  "p8": {
+    "ok": true,
+    "metric": "D, I",
+    "timeMs": 0,
+    "desc": "Eliminación masiva ejecutada en 0 ms (5 filas eliminadas, 0 restantes)."
+  },
+  "p9": {
+    "ok": true,
+    "metric": "D, I",
+    "timeMs": 0,
+    "desc": "Eliminación por rango BETWEEN ejecutada en 0 ms (2 registros borrados)."
+  },
+  "p10": {
+    "ok": true,
+    "metric": "I, TF",
+    "timeMs": 4,
+    "desc": "Transacción ACID revertida con éxito: Antes=2, Durante=0, Tras Rollback=2 (100% recuperado)."
+  },
+  "p11": {
+    "ok": true,
+    "metric": "D, I",
+    "timeMs": 1,
+    "desc": "Actualización puntual en 1 ms con confirmación inmediata de datos."
+  },
+  "p12": {
+    "ok": true,
+    "metric": "I",
+    "timeMs": 3,
+    "desc": "Restricción de Integridad Referencial activada (RESTRICT): Se evitó orfandad de registros hijos en reservas/fotos (Error: ER_ROW_IS_REFERENCED_2)."
+  },
+  "p13": {
+    "ok": true,
+    "metric": "D, I",
+    "timeMs": 0,
+    "desc": "UPDATE condicional compuesto completado en 0 ms (1 filas actualizadas y restauradas)."
+  },
+  "p14": {
+    "ok": true,
+    "metric": "D, I, TF",
+    "timeMs": 81,
+    "desc": "Dump completo generado en 81 ms (Tamaño: 35.9 KB con todas las 30 tablas y estructuras DDL/DML)."
+  },
+  "p15": {
+    "ok": true,
+    "metric": "D, I, TF",
+    "timeMs": 342,
+    "desc": "Restauración completa ejecutada en 342 ms, logrando disponibilidad y consistencia del 100%."
+  },
+  "p16": {
+    "ok": true,
+    "metric": "D, CS, TF",
+    "timeMs": 7,
+    "desc": "Inserción bajo sobrecarga completada en 7 ms sin degradación crítica."
+  },
+  "p17": {
+    "ok": true,
+    "metric": "D, CS",
+    "timeMs": 2,
+    "desc": "Consulta bajo sobrecarga resuelta en 2 ms con respuesta precisa."
+  },
+  "p18": {
+    "ok": true,
+    "metric": "D, CS, TF",
+    "timeMs": 2,
+    "desc": "Actualización bajo sobrecarga ejecutada en 2 ms con bloqueo a nivel de fila (Row-level lock)."
+  },
+  "p19": {
+    "ok": true,
+    "metric": "D, CS, TF",
+    "timeMs": 3,
+    "desc": "Eliminación bajo sobrecarga completada en 3 ms sin bloqueos de tabla."
+  },
+  "p20": {
+    "ok": true,
+    "metric": "TF, I",
+    "timeMs": 0,
+    "desc": "Motor InnoDB con soporte WAL (Write-Ahead Logging / Redo Log) e ib_logfile. Tras reinicio forzado, recupera transacciones no consolidadas mediante crash recovery automático comprobado."
+  }
+}
