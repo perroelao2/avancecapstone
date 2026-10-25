@@ -101,25 +101,35 @@ Para ingresar en la pantalla de **Iniciar Sesión**:
 
 ---
 
-## 6. Alcance Funcional de este Avance
+## 6. Alcance Funcional Completo del Sistema
 
-Siguiendo la regla de que **la Base de Datos manda sobre los Mockups**, este avance incluye el módulo completo de **Cabañas y sus tablas relacionadas**:
+Siguiendo la regla de que **la Base de Datos manda sobre los Mockups**, el sistema cubre de forma integral las 30 tablas del modelo de datos:
 
-1. **Autenticación (`usuarios`, `roles`, `comunas`)**:
-   * Inicio de sesión y registro de usuarios conectado a las tablas geográficas y de roles.
-2. **Listado y Búsqueda de Cabañas (`cabanas`)**:
-   * Tarjetas con collage de 3 fotos, capacidad de personas, precio por noche, dirección, sector, comuna, estado y comodidades.
-   * Buscador en tiempo real por nombre, dirección, sector o estado.
-3. **Agregar y Editar Cabaña + Dependencias**:
-   * **Datos generales (`cabanas`)**: Nombre, dirección (`ubicacion`), capacidad y precio por noche (`precio_por_noche`).
-   * **Catálogos (`sectores_algarrobo`, `estados_cabana`, `comunas`)**: Selectores dinámicos cargados desde la BD.
-   * **Fotografías (`fotos_cabana`)**: Carga de imágenes mediante selector de archivos del sistema o enlaces, marcando la imagen principal.
-   * **Descripción y Reglas (`reglas_cabana`)**: Como la tabla `cabanas` no posee una columna de descripción, el texto descriptivo y reglas se almacenan de forma relacional en `reglas_cabana`.
-   * **Comodidades (`comodidades` y `cabanas_comodidades`)**: Selección múltiple con checkboxes (Wifi Gratis, Tinaja Caliente, Parrilla, Vista al Mar, Estacionamiento).
-   * **Mantenciones (`mantenciones_cabana`)**: Registro y eliminación de trabajos de mantención con costo y fecha al editar una cabaña.
-   * **Bloqueo de Fechas (`bloqueos_fechas`)**: Bloqueo de rangos de fechas con motivo.
-4. **Inventario de Cabañas (`inventario` y `categorias_inventario`)**:
-   * Registro, listado y eliminación de artículos de equipamiento asignados a cada cabaña y clasificados por categoría.
+1. **Dashboard Operativo (`Inicio`)**:
+   * Métricas en tiempo real: total de cabañas, reservas registradas, ingresos acumulados, pagos aprobados, inventario y promociones activas.
+2. **Autenticación y Cuentas (`usuarios`, `roles`, `comunas`)**:
+   * Inicio de sesión y registro de usuarios con asignación de roles y comunas.
+3. **Módulo de Cabañas (`cabanas`)**:
+   * Listado con galería de 3 fotografías, capacidad, precio por noche, dirección, sector de Algarrobo, comuna y estado.
+   * Buscador en vivo por nombre, ubicación o sector.
+   * Creación y edición con selector de imágenes (`fotos_cabana`), comodidades (`comodidades`, `cabanas_comodidades`), descripción/reglas (`reglas_cabana`), mantenciones (`mantenciones_cabana`) y bloqueos de fechas (`bloqueos_fechas`).
+4. **Módulo de Reservas (`reservas`)**:
+   * Lista de reservas activas e historial con galería de la cabaña, detalles del cliente, fechas de estadía y monto total.
+   * Creación y edición de reservas con asignación de cliente, acompañantes (`huespedes_adicionales`) con RUT/pasaporte y servicios extra (`servicios_adicionales`, `reservas_servicios`).
+   * Registro y verificación de pagos (`pagos`), métodos de pago (`metodos_pago`), estados (`estados_pago`) y comprobantes bancarios (`comprobantes_transferencia`).
+5. **Módulo de Reportes (`reportes`)**:
+   * Filtro por rangos de fechas (desde / hasta), resumen de ganancias y tabla detallada con ID de reserva, cabaña, cliente, fechas, cantidad de huéspedes y monto.
+   * Exportación directa a archivo `.csv` compatible con Excel.
+6. **Módulo de Comunicaciones**:
+   * Reseñas y opiniones por cabaña (`comentarios`).
+   * Bandeja de entrada de mensajes enviados desde formulario web (`mensajes_contacto`).
+   * Historial de notificaciones del sistema (`notificaciones`) con contador dinámico en la campana de la barra superior.
+   * Registro de envíos de WhatsApp vinculados a reservas (`historial_mensajes_whatsapp`).
+7. **Módulo de Inventario y Catálogos**:
+   * Gestión completa de artículos por cabaña y categoría (`inventario`, `categorias_inventario`).
+   * Creación y control de promociones con porcentaje y fecha de expiración (`promociones`).
+   * Catálogo de servicios adicionales y tarifas (`servicios_adicionales`).
+   * Vista de catálogos maestros (`regiones`, `provincias`, `comunas`, `sectores_algarrobo`, `roles`).
 
 ---
 

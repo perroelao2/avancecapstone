@@ -8,10 +8,10 @@
 </head>
 <body>
 
-  <!-- Pantalla de Inicio de Sesion y Registro -->
+  <!-- ======================== 1. PANTALLA INICIAR SESIÓN (Mockup: iniciar sesion.png) ======================== -->
   <div id="view-login" class="login-wrapper">
     <div class="login-center">
-      <!-- Tarjeta para iniciar sesion -->
+      <!-- Card Login -->
       <div id="login-box" class="login-card">
         <h1>Iniciar Sesión</h1>
         <form id="form-login">
@@ -24,20 +24,20 @@
             <a id="link-show-register" class="login-link">Crear cuenta</a>
           </div>
         </form>
-      </div>
+        </div>
 
-      <!-- Tarjeta para crear una cuenta nueva -->
+      <!-- Card Crear Cuenta -->
       <div id="register-box" class="login-card hidden">
         <h1>Crear Cuenta</h1>
         <form id="form-register">
           <input type="text" id="reg-nombre" class="login-input" placeholder="Nombre completo" required />
           <input type="email" id="reg-correo" class="login-input" placeholder="Correo electrónico" required />
           <input type="password" id="reg-pass" class="login-input" placeholder="Contraseña" required />
-          <input type="text" id="reg-telefono" class="login-input" placeholder="Teléfono de contacto" />
+          <input type="text" id="reg-telefono" class="login-input" placeholder="Teléfono (ej: +56911112222)" />
           <select id="reg-rol" class="login-input"></select>
           <select id="reg-comuna" class="login-input"></select>
           <div>
-            <button type="submit" class="btn-pill btn-primary login-btn">Registrarse</button>
+            <button type="submit" class="btn-pill btn-primary login-btn">Crear Cuenta</button>
           </div>
           <div>
             <a id="link-back-login" class="login-link">Volver a Iniciar Sesión</a>
@@ -48,13 +48,13 @@
     <div class="bottom-blue-bar"></div>
   </div>
 
-  <!-- Contenedor principal que se muestra despues de iniciar sesion -->
+  <!-- ======================== APLICACIÓN PRINCIPAL ======================== -->
   <div id="app-shell" class="hidden" style="display:flex; flex-direction:column; min-height:100vh;">
 
-    <!-- Barra de navegacion superior -->
+    <!-- NAVBAR SUPERIOR (Fiel a todos los Mockups) -->
     <header class="navbar">
       <div class="nav-left">
-        <div class="brand-logo" data-nav="cabanas">
+        <div class="brand-logo" data-nav="inicio">
           <svg viewBox="0 0 64 64">
             <path d="M32 6L6 28h8v28h36V28h8L32 6zm0 9.5L48 29v21H16V29l16-13.5z"/>
             <rect x="26" y="34" width="12" height="16"/>
@@ -64,13 +64,20 @@
           <span>Cabañas Algarrobo</span>
         </div>
         <nav class="nav-links">
-          <span class="nav-link" data-nav="cabanas">Inicio</span>
+          <span class="nav-link" data-nav="inicio">Inicio</span>
           <span class="nav-link active" data-nav="cabanas">Cabañas</span>
-          <span class="nav-link" data-nav="inventario">Inventario</span>
+          <span class="nav-link" data-nav="reservas">Reservas</span>
+          <span class="nav-link" data-nav="reportes">Reportes</span>
+          <span class="nav-link" data-nav="comentarios">Comentarios</span>
+          <span class="nav-link" data-nav="inventario">Inventario y Catálogos</span>
         </nav>
       </div>
       <div class="nav-right">
-        <div class="user-pill" id="btn-logout" title="Cerrar sesión">
+        <button id="btn-top-notificaciones" class="notif-btn" title="Notificaciones de la BD">
+          🔔
+          <span id="notif-count-badge" class="notif-badge">0</span>
+        </button>
+        <div class="user-pill" id="btn-logout" title="Click para cerrar sesión">
           <div class="user-avatar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
@@ -81,7 +88,7 @@
       </div>
     </header>
 
-    <!-- Banner con foto de fondo y titulo de la vista actual -->
+    <!-- HERO BANNER DINÁMICO -->
     <section id="hero-banner" class="hero-banner hero-cabins">
       <div class="hero-overlay-box">
         <h2 id="hero-title">Cabañas</h2>
@@ -89,37 +96,55 @@
       </div>
     </section>
 
-    <!-- Vista 1: Listado y buscador de Cabañas -->
+    <!-- ======================== VISTA: INICIO DASHBOARD RESUMEN BD ======================== -->
+    <main id="section-inicio" class="content-container hidden">
+      <div id="inicio-stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:18px; margin-bottom:28px;"></div>
+      <div class="report-card">
+        <h3 style="color:var(--brand-blue); margin-bottom:14px;">Resumen Operativo del Sistema</h3>
+        <p style="font-size:14px; color:#4a5568; margin-bottom:18px;">
+          Panel general de administración de cabañas, reservas, inventario y catálogo de Algarrobo Connect.
+        </p>
+        <div style="display:flex; gap:14px; flex-wrap:wrap;">
+          <button class="btn-pill btn-primary" data-goto="cabanas">Administrar Cabañas</button>
+          <button class="btn-pill btn-primary" data-goto="reservas">Administrar Reservas y Pagos</button>
+          <button class="btn-pill btn-primary" data-goto="reportes">Generar Reportes</button>
+          <button class="btn-pill btn-secondary" data-goto="inventario">Inventario, Promociones y Servicios</button>
+          <button class="btn-pill btn-secondary" data-goto="comentarios">Comentarios, Contacto y WhatsApp</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ======================== VISTA: CABAÑAS LISTA (Mockup: inicio_admin.png) ======================== -->
     <div id="section-cabanas">
       <div class="toolbar-section">
         <div class="search-box">
-          <input type="text" id="search-cabanas" placeholder="Buscar cabaña..." />
+          <input type="text" id="search-cabanas" placeholder="Buscar cabaña por nombre, sector o ubicación..." />
           <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         </div>
         <button id="btn-open-add-cabana" class="btn-pill btn-primary" style="min-width:210px;">Agregar Cabaña</button>
-        <button class="btn-pill btn-primary" data-goto="inventario" style="min-width:210px;">Inventario de Cabañas</button>
+        <button class="btn-pill btn-primary" data-goto="reservas" style="min-width:210px;">Ver Reservas</button>
       </div>
       <div class="content-container">
         <div id="cabanas-cards-list" class="cards-stack"></div>
       </div>
     </div>
 
-    <!-- Vista 2: Formulario para Agregar o Editar una Cabaña -->
+    <!-- ======================== VISTA: AGREGAR / EDITAR CABAÑA (Mockups: agregar cabaña.png & editar cabaña.png) ======================== -->
     <div id="section-cabana-form" class="content-container hidden">
       <div class="split-editor">
-        <!-- Lado izquierdo: vista previa de las 3 imagenes y carga de fotos -->
+        <!-- Columna izquierda: 3 fotos + Botón Agregar Imagen -->
         <div class="left-gallery-panel">
           <div id="cabana-form-gallery" class="gallery-preview-3"></div>
           <button type="button" id="btn-add-foto-file" class="btn-pill btn-primary" style="min-width:210px;">Agregar Imagen</button>
           <div style="width:100%; margin-top:8px;">
-            <label style="font-size:12px; font-weight:700; color:#334;">Enlaces de fotografías:</label>
-            <input type="text" id="cab-foto-1" class="form-control" style="width:100%; margin-top:4px; font-size:12px;" placeholder="Imagen principal" />
-            <input type="text" id="cab-foto-2" class="form-control" style="width:100%; margin-top:6px; font-size:12px;" placeholder="Imagen secundaria 1" />
-            <input type="text" id="cab-foto-3" class="form-control" style="width:100%; margin-top:6px; font-size:12px;" placeholder="Imagen secundaria 2" />
+            <label style="font-size:12px; font-weight:700; color:#334;">Fotografías (la primera es principal):</label>
+            <input type="text" id="cab-foto-1" class="form-control" style="width:100%; margin-top:4px; font-size:12px;" placeholder="URL Foto 1 (Principal)" />
+            <input type="text" id="cab-foto-2" class="form-control" style="width:100%; margin-top:6px; font-size:12px;" placeholder="URL Foto 2" />
+            <input type="text" id="cab-foto-3" class="form-control" style="width:100%; margin-top:6px; font-size:12px;" placeholder="URL Foto 3" />
           </div>
         </div>
 
-        <!-- Lado derecho: formulario con los datos de la cabaña -->
+        <!-- Columna derecha: Card celeste "Datos de la Cabaña" -->
         <div class="form-blue-card">
           <h3>Datos de la Cabaña</h3>
           <form id="form-cabana">
@@ -127,12 +152,13 @@
 
             <div class="form-row">
               <label>Nombre:</label>
-              <input type="text" id="cab-nombre" class="form-control" placeholder="Ej: Cabaña El Canelo" required />
+              <input type="text" id="cab-nombre" class="form-control" placeholder="Cabaña El Canelo" required />
             </div>
 
+            <!-- Campo de la BD que no estaba explícito en el mockup pero manda la BD -->
             <div class="form-row">
               <label>Dirección:</label>
-              <input type="text" id="cab-ubicacion" class="form-control" placeholder="Ej: Av. Alessandri 450, Algarrobo" required />
+              <input type="text" id="cab-ubicacion" class="form-control" placeholder="Av. Alessandri 450, Algarrobo" required />
             </div>
 
             <div class="form-grid-2">
@@ -141,18 +167,19 @@
                 <input type="number" id="cab-capacidad" class="form-control" min="1" value="4" required />
               </div>
               <div class="form-row" style="margin-bottom:0;">
-                <label>Precio por Noche:</label>
+                <label >Precio por Noche ($):</label>
                 <input type="number" id="cab-precio" class="form-control" min="0" step="1000" value="55000" required />
               </div>
             </div>
 
+            <!-- Campos relacionales de la BD: estados_cabana, sectores_algarrobo, comunas -->
             <div class="form-grid-2">
               <div class="form-row" style="margin-bottom:0;">
                 <label>Sector:</label>
                 <select id="cab-sector" class="form-control"></select>
               </div>
               <div class="form-row" style="margin-bottom:0;">
-                <label>Estado:</label>
+                <label>Estado Cabaña:</label>
                 <select id="cab-estado" class="form-control"></select>
               </div>
             </div>
@@ -162,11 +189,13 @@
               <select id="cab-comuna" class="form-control"></select>
             </div>
 
+            <!-- Reglas / Descripción (En BD cabanas no tiene columna descripcion, se guarda en reglas_cabana) -->
             <div class="form-row" style="align-items:flex-start;">
               <label style="padding-top:10px;">Descripción y Reglas:</label>
-              <textarea id="cab-reglas" class="form-control" placeholder="Ingresa la descripción o reglas de la cabaña..."></textarea>
+              <textarea id="cab-reglas" class="form-control" placeholder="Una línea por regla o descripción de la cabaña..."></textarea>
             </div>
 
+            <!-- Comodidades (Tabla cabanas_comodidades) -->
             <div class="form-row" style="align-items:flex-start;">
               <label style="padding-top:8px;">Comodidades:</label>
               <div id="cab-comodidades-checks" class="amenities-check-grid" style="flex:1;"></div>
@@ -178,30 +207,30 @@
             </div>
           </form>
 
-          <!-- Seccion adicional al editar una cabaña: Mantenciones y Bloqueos de Fechas -->
+          <!-- Paneles adicionales en modo Edición para Mantenciones  y Bloqueos  -->
           <div id="cabana-extra-bd-panels" class="hidden">
             <div class="form-Blue-section-title">Mantenciones y Bloqueos de Fechas</div>
             <div class="form-grid-2">
-              <!-- Historial de mantenciones -->
+              <!-- Mantenciones -->
               <div class="mini-list-box">
-                <strong>Historial de Mantenciones</strong>
+                <strong>Mantenciones Registradas</strong>
                 <div id="cab-mantenciones-list" style="margin:8px 0;"></div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-                  <input type="text" id="new-mant-desc" class="form-control" placeholder="Detalle del trabajo" style="padding:6px 10px; font-size:12px;" />
+                  <input type="text" id="new-mant-desc" class="form-control" placeholder="Descripción mantención" style="padding:6px 10px; font-size:12px;" />
                   <input type="number" id="new-mant-costo" class="form-control" placeholder="Costo $" style="padding:6px 10px; font-size:12px; max-width:110px;" />
                   <input type="date" id="new-mant-fecha" class="form-control" style="padding:6px 10px; font-size:12px;" />
-                  <button type="button" id="btn-add-mantencion" class="btn-pill btn-primary btn-sm">Agregar</button>
+                  <button type="button" id="btn-add-mantencion" class="btn-pill btn-primary btn-sm">+ Mantención</button>
                 </div>
               </div>
-              <!-- Fechas bloqueadas -->
+              <!-- Bloqueos de Fechas -->
               <div class="mini-list-box">
-                <strong>Fechas Bloqueadas</strong>
+                <strong>Bloqueos de Fechas</strong>
                 <div id="cab-bloqueos-list" style="margin:8px 0;"></div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
                   <input type="date" id="new-bloq-desde" class="form-control" style="padding:6px 10px; font-size:12px;" />
                   <input type="date" id="new-bloq-hasta" class="form-control" style="padding:6px 10px; font-size:12px;" />
-                  <input type="text" id="new-bloq-motivo" class="form-control" placeholder="Motivo del bloqueo" style="padding:6px 10px; font-size:12px;" />
-                  <button type="button" id="btn-add-bloqueo" class="btn-pill btn-primary btn-sm">Bloquear</button>
+                  <input type="text" id="new-bloq-motivo" class="form-control" placeholder="Motivo bloqueo" style="padding:6px 10px; font-size:12px;" />
+                  <button type="button" id="btn-add-bloqueo" class="btn-pill btn-primary btn-sm">+ Bloquear</button>
                 </div>
               </div>
             </div>
@@ -211,28 +240,262 @@
       </div>
     </div>
 
-    <!-- Vista 3: Inventario de las Cabañas -->
-    <div id="section-inventario" class="content-container hidden">
-      <div class="report-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <h3 style="color:var(--brand-blue);">Inventario de Cabañas</h3>
-          <button class="btn-pill btn-secondary btn-sm" data-goto="cabanas">Volver a Cabañas</button>
+    <!-- ======================== VISTA: RESERVAS LISTA (Mockup: inicio reservas.png) ======================== -->
+    <div id="section-reservas" class="hidden">
+      <div class="toolbar-section">
+        <div class="search-box">
+          <input type="text" id="search-reservas" placeholder="Buscar reserva por cabaña, cliente o estado..." />
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         </div>
+        <button id="btn-open-new-reserva" class="btn-pill btn-primary" style="min-width:190px;">+ Nueva Reserva</button>
+        <button class="btn-pill btn-primary" data-goto="cabanas" style="min-width:190px;">Ver Cabañas</button>
+        <button class="btn-pill btn-primary" data-goto="reportes" style="min-width:190px;">Ver Reportes</button>
+      </div>
+      <div class="content-container">
+        <div id="reservas-cards-list" class="cards-stack"></div>
+      </div>
+    </div>
+
+    <!-- ======================== VISTA: DATOS DE RESERVA (Mockup: datos de reserva.png + Tablas BD) ======================== -->
+    <div id="section-reserva-detail" class="content-container hidden">
+      <div class="split-editor">
+        <!-- Galería de la cabaña reservada -->
+        <div class="left-gallery-panel">
+          <div id="reserva-detail-gallery" class="gallery-preview-3"></div>
+          <div id="reserva-detail-cabana-summary" class="mini-list-box" style="width:100%;"></div>
+        </div>
+
+        <!-- Card celeste de Datos de Reserva -->
+        <div class="form-blue-card">
+          <form id="form-reserva">
+            <input type="hidden" id="res-id" />
+
+            <h3>Cabaña Seleccionada</h3>
+            <div style="display:flex; justify-content:center; margin-bottom:18px;">
+              <select id="res-cabana" class="form-control" style="max-width:380px; text-align:center; font-weight:600;" required></select>
+            </div>
+
+            <div class="form-grid-2" style="max-width:520px; margin:0 auto 18px;">
+              <div style="text-align:center;">
+                <label style="display:block; font-weight:700; font-size:14px; margin-bottom:6px;">Fecha Llegada</label>
+                <input type="date" id="res-inicio" class="form-control" style="width:100%; text-align:center;" required />
+              </div>
+              <div style="text-align:center;">
+                <label style="display:block; font-weight:700; font-size:14px; margin-bottom:6px;">Fecha Salida</label>
+                <input type="date" id="res-fin" class="form-control" style="width:100%; text-align:center;" required />
+              </div>
+            </div>
+
+            <div class="form-grid-2" style="max-width:560px; margin:0 auto 18px;">
+              <div>
+                <label style="display:block; font-weight:700; font-size:13px; margin-bottom:4px;">Estado de la Reserva</label>
+                <select id="res-estado" class="form-control" style="width:100%;"></select>
+              </div>
+              <div>
+                <label style="display:block; font-weight:700; font-size:13px; margin-bottom:4px;">Monto Total ($)</label>
+                <input type="number" id="res-monto-total" class="form-control" style="width:100%;" min="0" step="1000" required />
+              </div>
+            </div>
+
+            <div class="form-Blue-section-title">Datos del Cliente</div>
+
+            <div class="form-row">
+              <label>Cliente Existente:</label>
+              <select id="res-usuario-select" class="form-control"></select>
+            </div>
+            <div class="form-row">
+              <label>Nombre:</label>
+              <input type="text" id="res-cli-nombre" class="form-control" placeholder="Nombre del cliente" required />
+            </div>
+            <div class="form-row">
+              <label>Gmail / Correo:</label>
+              <input type="email" id="res-cli-correo" class="form-control" placeholder="ejemplo@gmail.com" required />
+            </div>
+            <div class="form-row">
+              <label>Teléfono:</label>
+              <input type="text" id="res-cli-telefono" class="form-control" placeholder="+56 9 0000 0000" />
+            </div>
+            <div class="form-row">
+              <label>Comuna Cliente:</label>
+              <select id="res-cli-comuna" class="form-control"></select>
+            </div>
+
+            <!-- Nota explicativa y tabla real de la BD: huespedes_adicionales -->
+            <div class="form-Blue-section-title">
+              Huéspedes Acompañantes y RUT
+            </div>
+            <div class="mini-list-box">
+              <div id="res-huespedes-list"></div>
+              <div style="display:flex; gap:8px; margin-top:8px;">
+                <input type="text" id="new-huesped-nombre" class="form-control" placeholder="Nombre completo acompañante" style="padding:7px 12px; font-size:13px;" />
+                <input type="text" id="new-huesped-rut" class="form-control" placeholder="RUT o Pasaporte (00.000.000-0)" style="padding:7px 12px; font-size:13px;" />
+                <button type="button" id="btn-add-huesped" class="btn-pill btn-secondary btn-sm">+ Huésped</button>
+              </div>
+            </div>
+
+            <!-- Servicios Adicionales (reservas_servicios + servicios_adicionales) -->
+            <div class="form-Blue-section-title">
+              Servicios Adicionales
+            </div>
+            <div class="mini-list-box">
+              <div id="res-servicios-list"></div>
+              <div style="display:flex; gap:8px; margin-top:8px;">
+                <select id="new-res-servicio" class="form-control" style="padding:7px 12px; font-size:13px;"></select>
+                <input type="number" id="new-res-serv-cant" class="form-control" value="1" min="1" style="max-width:90px; padding:7px 12px; font-size:13px;" />
+                <button type="button" id="btn-add-res-servicio" class="btn-pill btn-secondary btn-sm">+ Servicio</button>
+              </div>
+            </div>
+
+            <div class="form-actions-bottom">
+              <button type="button" id="btn-reserva-back" class="btn-pill btn-primary" style="min-width:180px;">Volver Atrás</button>
+              <button type="submit" class="btn-pill btn-primary" style="min-width:180px;">Guardar Reserva</button>
+              <button type="button" id="btn-reserva-delete" class="btn-pill btn-danger" style="min-width:180px;">Eliminar Reserva</button>
+            </div>
+          </form>
+
+          <!-- Pagos y Comprobantes de Transferencia de esta Reserva  -->
+          <div id="res-pagos-section" style="margin-top:24px;">
+            <div class="form-Blue-section-title">Pagos y Comprobantes Bancarios</div>
+            <div class="mini-list-box">
+              <div id="res-pagos-list"></div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; margin-top:10px;">
+                <input type="number" id="pago-monto" class="form-control" placeholder="Monto $" style="padding:7px 10px; font-size:12.5px;" />
+                <select id="pago-metodo" class="form-control" style="padding:7px 10px; font-size:12.5px;"></select>
+                <select id="pago-estado" class="form-control" style="padding:7px 10px; font-size:12.5px;"></select>
+                <input type="text" id="pago-obs" class="form-control" placeholder="Observación pago" style="padding:7px 10px; font-size:12.5px;" />
+                <input type="text" id="pago-num-op" class="form-control" placeholder="N° Operación (Comprobante)" style="padding:7px 10px; font-size:12.5px;" />
+                <input type="text" id="pago-banco" class="form-control" placeholder="Banco Origen" style="padding:7px 10px; font-size:12.5px;" />
+              </div>
+              <div style="margin-top:8px; text-align:right;">
+                <button type="button" id="btn-add-pago" class="btn-pill btn-primary btn-sm">Registrar Pago / Comprobante</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================== VISTA: REPORTES (Mockup: reportes.png) ======================== -->
+    <div id="section-reportes" class="hidden">
+      <div class="toolbar-section">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <strong style="font-size:14px;">Reportes desde:</strong>
+          <input type="date" id="rep-desde" class="form-control" value="2026-01-01" />
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <strong style="font-size:14px;">Hasta:</strong>
+          <input type="date" id="rep-hasta" class="form-control" value="2026-12-31" />
+        </div>
+        <button class="btn-pill btn-primary" data-goto="cabanas">Ver Cabañas</button>
+        <button class="btn-pill btn-primary" data-goto="reservas">Ver Reservas</button>
+      </div>
+
+      <div class="content-container">
+        <div class="report-card">
+          <div class="report-meta">
+            <div><strong>ID Reporte:</strong> <span id="rep-id-label">RP - 001</span></div>
+            <div><strong>Reservas desde:</strong> <span id="rep-range-label">2026-01-01 hasta 2026-12-31</span></div>
+            <div><strong>Total Ganancias:</strong> <span id="rep-total-label">$ 0</span></div>
+          </div>
+
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Id Reserva</th>
+                <th>Nombre Cabaña</th>
+                <th>Nombre Cliente</th>
+                <th>Fecha de Llegada</th>
+                <th>Fecha de Salida</th>
+                <th>Nro de Personas<br/><small>(Titular + Acompañantes)</small></th>
+                <th>Precio Total</th>
+                <th>Detalles de la Reserva</th>
+              </tr>
+            </thead>
+            <tbody id="rep-table-body"></tbody>
+          </table>
+
+          <div style="text-align:center; margin-top:28px;">
+            <button id="btn-export-csv" class="btn-pill btn-primary" style="min-width:230px;">Descargar Reportes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================== VISTA: COMENTARIOS, MENSAJES CONTACTO, NOTIFICACIONES Y WHATSAPP ======================== -->
+    <div id="section-comentarios" class="content-container hidden">
+      <div class="subtabs">
+        <button class="subtab-btn active" data-commtab="tab-comentarios">Comentarios</button>
+        <button class="subtab-btn" data-commtab="tab-contacto">Mensajes de Contacto</button>
+        <button class="subtab-btn" data-commtab="tab-whatsapp">Historial WhatsApp</button>
+        <button class="subtab-btn" data-commtab="tab-notificaciones">Notificaciones</button>
+      </div>
+
+      <!-- Tab Comentarios -->
+      <div id="tab-comentarios" class="report-card">
+        <h3 style="color:var(--brand-blue); margin-bottom:14px;">Comentarios y Reseñas</h3>
+        <form id="form-add-comentario" style="display:grid; grid-template-columns:1fr 1fr 1fr 2fr auto; gap:10px; margin-bottom:18px;">
+          <input type="text" id="com-nombre" class="form-control" placeholder="Nombre autor" required />
+          <input type="email" id="com-correo" class="form-control" placeholder="Correo" required />
+          <select id="com-cabana" class="form-control"></select>
+          <input type="text" id="com-texto" class="form-control" placeholder="Comentario..." required />
+          <button type="submit" class="btn-pill btn-primary btn-sm">Publicar</button>
+        </form>
+        <div id="list-comentarios"></div>
+      </div>
+
+      <!-- Tab Mensajes de Contacto -->
+      <div id="tab-contacto" class="report-card hidden">
+        <h3 style="color:var(--brand-blue); margin-bottom:14px;">Mensajes de Contacto Web</h3>
+        <div id="list-mensajes-contacto"></div>
+      </div>
+
+      <!-- Tab Historial WhatsApp -->
+      <div id="tab-whatsapp" class="report-card hidden">
+        <h3 style="color:var(--brand-blue); margin-bottom:14px;">Historial de WhatsApp</h3>
+        <form id="form-send-whatsapp" style="display:grid; grid-template-columns:1fr 1fr 2fr auto; gap:10px; margin-bottom:18px;">
+          <input type="text" id="wa-telefono" class="form-control" placeholder="+56998765432" required />
+          <select id="wa-reserva" class="form-control"></select>
+          <input type="text" id="wa-mensaje" class="form-control" placeholder="Mensaje enviado al huésped..." required />
+          <button type="submit" class="btn-pill btn-primary btn-sm">Registrar Envío</button>
+        </form>
+        <div id="list-whatsapp"></div>
+      </div>
+
+      <!-- Tab Notificaciones -->
+      <div id="tab-notificaciones" class="report-card hidden">
+        <h3 style="color:var(--brand-blue); margin-bottom:14px;">Notificaciones</h3>
+        <div id="list-notificaciones"></div>
+      </div>
+    </div>
+
+    <!-- ======================== VISTA: INVENTARIO, PROMOCIONES, SERVICIOS Y CATÁLOGOS BD ======================== -->
+    <div id="section-inventario" class="content-container hidden">
+      <div class="subtabs">
+        <button class="subtab-btn active" data-invtab="tab-inv-items">Inventario por Cabaña</button>
+        <button class="subtab-btn" data-invtab="tab-promociones">Promociones y Descuentos</button>
+        <button class="subtab-btn" data-invtab="tab-servicios">Servicios Adicionales</button>
+        <button class="subtab-btn" data-invtab="tab-catalogos">Catálogos del Sistema</button>
+      </div>
+
+      <!-- Subtab Inventario -->
+      <div id="tab-inv-items" class="report-card">
+        <h3 style="color:var(--brand-blue); margin-bottom:14px;">Control de Inventario</h3>
         <form id="form-inventario" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:20px;">
           <input type="hidden" id="inv-id" />
-          <input type="text" id="inv-nombre" class="form-control" placeholder="Artículo (ej: Juego de sábanas)" required />
-          <input type="number" id="inv-cantidad" class="form-control" placeholder="Cantidad" min="1" value="1" required />
+          <input type="text" id="inv-nombre" class="form-control" placeholder="Ítem (ej: Juego de sábanas)" required />
+          <input type="number" id="inv-cantidad" class="form-control" placeholder="Cantidad" min="0" value="1" required />
           <input type="text" id="inv-ubicacion" class="form-control" placeholder="Ubicación (ej: Cocina)" />
           <select id="inv-cabana" class="form-control"></select>
           <select id="inv-categoria" class="form-control"></select>
-          <input type="text" id="inv-obs" class="form-control" placeholder="Observaciones" />
-          <button type="submit" class="btn-pill btn-primary btn-sm">Agregar al Inventario</button>
+          <input type="text" id="inv-obs" class="form-control" placeholder="Observación" />
+          <button type="submit" class="btn-pill btn-primary btn-sm">Guardar Ítem</button>
         </form>
         <table class="report-table">
           <thead>
             <tr>
-              <th>N°</th>
-              <th>Artículo</th>
+              <th>ID</th>
+              <th>Ítem</th>
               <th>Cantidad</th>
               <th>Ubicación</th>
               <th>Cabaña</th>
@@ -244,12 +507,40 @@
           <tbody id="inv-table-body"></tbody>
         </table>
       </div>
+
+      <!-- Subtab Promociones -->
+      <div id="tab-promociones" class="report-card hidden">
+        <h3 style="color:var(--brand-blue); margin-bottom:14px;">Códigos Promocionales</h3>
+        <form id="form-promocion" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+          <input type="text" id="promo-codigo" class="form-control" placeholder="Código (ej: VERANO2026)" required />
+          <input type="number" id="promo-desc" class="form-control" placeholder="% Descuento" min="1" max="100" required />
+          <input type="date" id="promo-exp" class="form-control" required />
+          <button type="submit" class="btn-pill btn-primary btn-sm">+ Crear Promoción</button>
+        </form>
+        <div id="list-promociones"></div>
+      </div>
+
+      <!-- Subtab Servicios Adicionales -->
+      <div id="tab-servicios" class="report-card hidden">
+        <h3 style="color:var(--brand-blue); margin-bottom:14px;">Catálogo de Servicios Adicionales</h3>
+        <form id="form-servicio" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+          <input type="text" id="serv-nombre" class="form-control" placeholder="Nombre del servicio" required />
+          <input type="number" id="serv-precio" class="form-control" placeholder="Precio ($)" min="0" step="1000" required />
+          <button type="submit" class="btn-pill btn-primary btn-sm">+ Guardar Servicio</button>
+        </form>
+        <div id="list-servicios"></div>
+      </div>
+
+      <!-- Subtab Catálogos BD -->
+      <div id="tab-catalogos" class="report-card hidden">
+        <h3 style="color:var(--brand-blue); margin-bottom:14px;">Catálogos Maestros en Base de Datos</h3>
+        <div id="catalogos-summary-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;"></div>
+      </div>
     </div>
 
     <div class="bottom-blue-bar" style="margin-top:auto;"></div>
   </div>
 
-  <!-- Contenedor para mostrar avisos flotantes en la esquina inferior derecha -->
   <div id="toast" class="toast-msg hidden"></div>
 
   <script src="./renderer.js"></script>
