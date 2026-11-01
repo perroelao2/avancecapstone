@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reserva tu cabaña</title>
+  <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
+  <link rel="icon" href="{% static 'img/favicon.png' %}" />
+</head>
+<body class="login-body">
+
+  <!-- Navbar -->
+  <header>
+    <div class="container-nav">
+      <div class="logo">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" />
+        <span>Cabañas Algarrobo</span>
+      </div>
+      <div class="menu-toggle" id="toggle">☰</div>
+      <nav id="menu">
+        <a href="{% url 'index' %}">Inicio</a>
+        <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'contacto' %}">Contacto</a>
+        <a href="{% url 'comentarios' %}">Comentarios</a>
+      </nav>
+      <a class="btn-login" href="{% url 'logout' %}">Cerrar Sesión</a>
+    </div>
+  </header>
+
+  <!-- Formulario -->
+  <main class="login-container">
+    <h2>Reservar Cabaña</h2>
+    <form method="post" class="login-form">
+      {% csrf_token %}
+      
+      <label for="fecha_inicio">Fecha Inicio</label>
+      <input type="date" name="fecha_inicio" id="fecha_inicio" required>
+
+      <label for="fecha_fin">Fecha Fin</label>
+      <input type="date" name="fecha_fin" id="fecha_fin" required oninput="validarFechas()">
+
+      <button type="submit">Confirmar Reserva</button>
+    </form>
+  </main>
+
+  <footer class="footer-login">
+    <div style="height: 20px; background-color: #004B87;"></div>
+  </footer>
+
+  <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>

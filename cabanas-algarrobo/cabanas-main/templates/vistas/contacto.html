@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacto - Cabañas Algarrobo</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'css/estilo.css' %}">
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+</head>
+
+<body>
+  {% if messages %}
+    <div id="mensaje-flotante">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+    <!-- Encabezado -->
+    <header>
+        <div class="container-nav">
+            <div class="logo">
+                <img src="{% static 'img/logo.png' %}" alt="Logo" />
+                <span>Cabañas Algarrobo</span>
+            </div>
+
+            <!-- Botón hamburguesa -->
+            <div class="menu-toggle" id="toggle">
+                ☰
+            </div>
+
+            <!-- Menú con ID necesario -->
+            <nav id="menu">
+                <a href="{% url 'index' %}">Inicio</a>
+                <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+                <a href="{% url 'contacto' %}">Contacto</a>
+                <a href="{% url 'comentarios' %}" class="activo">Comentarios</a>
+            </nav>
+
+            {% if nombre %}
+            <a class="btn-login" href="{% url 'panel_cliente' %}">
+                Hola 🖖, {{ nombre|upper }}
+            </a>
+            <a class="btn-login" href="{% url 'logout' %}">Cerrar sesión</a>
+            {% else %}
+            <a class="btn-login" href="{% url 'login' %}">Iniciar Sesión</a>
+            {% endif %}
+        </div>
+    </header>
+
+  <!-- Hero con imagen -->
+  <section class="hero-contacto">
+    <div class="hero-text">
+      <h2>Contáctanos</h2>
+      <p>Estamos aquí para ayudarte</p>
+    </div>
+  </section>
+  <!-- Mapa de ubicación -->
+  <section class="mapa-ubicacion" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+    <h1>Nuestra ubicación</h1>
+    <p>Aquí puedes encontrarnos:</p>
+
+    <iframe src="https://www.google.com/maps/d/u/0/embed?mid=1T_-EA_11lEkyGyR1IaGe9Pj1XF0cvRo&ehbc=2E312F&noprof=1" width="640" height="480"></iframe>
+
+    <p>¡Esperamos verte pronto!</p>
+  </section>
+
+  <!-- Formulario de contacto -->
+  <section class="formulario-contacto">
+    <form action="{% url 'guardar_mensaje' %}" method="POST">
+      {% csrf_token %}
+      <input type="text" name="nombre" placeholder="Tu nombre" required>
+      <input type="email" name="correo" placeholder="Tu correo" required>
+      <textarea name="mensaje" placeholder="Escribe tu mensaje..." required></textarea>
+      <button type="submit">Enviar mensaje</button>
+      {% if messages %}
+      <div class="alertas">
+        {% for message in messages %}
+        <div class="alerta {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </form>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-info">
+      <div>
+        <p>correo@ejemplo.com</p>
+        <p>+56900000000</p>
+        <p>El Manzano, Parcela 5, Algarrobo</p>
+      </div>
+      <div>
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Política de privacidad</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+
+</html>

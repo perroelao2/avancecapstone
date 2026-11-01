@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pago por Transferencia</title>
+  <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
+</head>
+<body class="login-body">
+  {% if messages %}
+    <div id="mensaje-flotante">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <header>
+    <div class="container-nav">
+      <div class="logo">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" />
+        <span>Cabañas Algarrobo</span>
+      </div>
+      <div class="menu-toggle" id="toggle">☰</div>
+      <nav id="menu">
+        <a href="{% url 'index' %}">Inicio</a>
+        <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'contacto' %}">Contacto</a>
+        <a href="{% url 'comentarios' %}">Comentarios</a>
+      </nav>
+      <a class="btn-login" href="{% url 'logout' %}">Cerrar Sesión</a>
+    </div>
+  </header>
+
+  <main class="login-container">
+    <h2>Datos para la Transferencia</h2>
+    <p><strong>Banco:</strong> BancoEstado</p>
+    <p><strong>Cuenta:</strong> 123456789</p>
+    <p><strong>Tipo de cuenta:</strong> Cuenta Rut</p>
+    <p><strong>Nombre:</strong> Juan Pérez</p>
+    <p><strong>RUT:</strong> 12.345.678-9</p>
+    <p><strong>Correo:</strong> contacto@cabanasalgarrobo.cl</p>
+    <p><strong>Asunto:</strong> Pago Reserva</p>
+    <p><strong>Monto:</strong> 50000</p>
+    <p> Una vez realizada la transferencia, tu reserva quedará pendiente de confirmación por un administrador.</p>
+    <p>Recuerda enviar el comprobante de la transferencia al correo indicado.</p>
+    <br>
+    <form method="POST" class="login-form">
+      {% csrf_token %}
+      <button type="submit">He realizado la transferencia</button>
+    </form>
+  </main>
+
+  <footer class="footer-login">
+    <div style="height: 20px; background-color: #004B87;"></div>
+  </footer>
+
+  <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>

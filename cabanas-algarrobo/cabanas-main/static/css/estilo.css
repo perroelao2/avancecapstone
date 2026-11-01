@@ -1,0 +1,1494 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+/* NAVBAR */
+header {
+  background-color: white;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.container-nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  width: 35px;
+  margin-right: 10px;
+}
+
+.logo span {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #004B87;
+}
+
+nav a {
+  margin: 0 10px;
+  color: #222;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btn-login {
+  background-color: #004B87;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* HERO */
+.hero {
+  background: url("../img/fondo.jpg") no-repeat center center/cover;
+  height: 75vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 40px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.overlay h2 {
+  font-size: 2rem;
+  color: #004B87;
+  margin-bottom: 10px;
+}
+
+.overlay p {
+  color: #004B87;
+  margin-bottom: 20px;
+}
+
+.btn-hero {
+  background-color: #004B87;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* DESTACADAS */
+.destacadas {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.destacadas h2 {
+  color: #004B87;
+  margin-bottom: 40px;
+}
+
+.tarjetas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.card {
+  background-color: white;
+  width: 260px;
+  border-radius: 12px;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+  padding-bottom: 20px;
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.card h3 {
+  margin: 15px 0;
+}
+
+.btn-card {
+  background-color: #004B87;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* FOOTER */
+footer {
+  background-color: #004B87;
+  color: white;
+  padding: 30px 20px;
+}
+
+.footer-info {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.footer-info div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.footer-info a {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+/* Botón hamburguesa */
+.menu-toggle {
+  display: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #004B87;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container-nav {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  nav {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    background-color: white;
+    margin-top: 10px;
+    padding: 10px 0;
+  }
+
+  nav a {
+    padding: 10px;
+    text-align: center;
+    border-top: 1px solid #eee;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  nav.active {
+    display: flex;
+  }
+
+  .btn-login {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .overlay h2 {
+    font-size: 1.5rem;
+  }
+
+  .tarjetas {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card {
+    width: 90%;
+  }
+}
+
+/* LOGIN */
+.login-body {
+  background-color: #f4f2ef;
+}
+
+.login-container {
+  background: white;
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 40px 30px;
+  border-radius: 30px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.login-container h2 {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: #222;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border: 1px solid #aaa;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+.login-form button {
+  width: 100%;
+  background-color: #004B87;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.crear-cuenta {
+  display: block;
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #004B87;
+  text-decoration: none;
+}
+
+.footer-login {
+  margin-top: 60px;
+}
+
+
+
+.hero-cabanas {
+  background: url('../img/fondo2.jpg') center/cover no-repeat;
+  height: 300px;
+  position: relative;
+}
+
+.hero-cabanas .overlay {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.iconos-info img {
+  width: 60px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.iconos-info {
+  text-align: center;
+  padding: 30px 0;
+  display: flex;
+  justify-content: center;
+  gap: 100px;
+}
+
+.cabanas-listado {
+  padding: 30px;
+  background-color: #f7f7f7;
+}
+
+.cabanas-card {
+  display: flex;
+  gap: 30px;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.cabanas-imagenes img {
+  width: 200px;
+  border-radius: 10px;
+}
+
+.cabanas-info {
+  flex-grow: 1;
+}
+
+.cabanas-boton {
+  text-align: right;
+}
+
+.btn-card {
+  background-color: #004B87;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  text-decoration: none;
+}
+
+
+.hero-cabanas {
+  background-image: url('../img/fondo2.jpg'); /* Usa tu fondo de cabañas */
+  background-size: cover;
+  background-position: center;
+  height: 400px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-text-box {
+  background-color: rgba(153, 102, 51, 0.6); /* café claro translúcido */
+  padding: 2rem;
+  border-radius: 20px;
+  color: #fff;
+  text-align: center;
+  max-width: 600px;
+}
+
+.hero-text-box h2 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-text-box p {
+  font-size: 1.2rem;
+}
+
+.hero-cabanas {
+  background-image: url("../img/fondo2.jpg"); /* Asegúrate que exista */
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.hero-overlay-box {
+  background-color: rgba(255, 255, 255, 0.8); /* blanco con transparencia */
+  padding: 30px 50px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
+}
+
+
+.cabanas-imagenes-multiples {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas */
+  grid-template-rows: repeat(2, 1fr);    /* 2 filas */
+  gap: 8px;
+  width: 200px;
+  height: 200px;
+}
+
+.cabanas-imagenes-multiples img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.cabanas-boton {
+  text-align: center;
+  width: 100%;
+  margin-top: 10px;
+}
+
+
+
+.reservas-body {
+  background-color: #f0f0f0;
+}
+
+
+
+/**/
+.hero-imagen {
+  background: url('../img/OIP.jpeg') no-repeat center center/cover;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-text {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  padding: 2rem 3rem;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.formulario-reserva-seccion {
+  background: #f0f8ff;
+  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.formulario-reserva-box {
+  background: white;
+  padding: 40px;
+  border-radius: 30px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 600px;
+}
+
+.formulario-reserva-box input,
+.formulario-reserva-box select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.formulario-reserva-box h4 {
+  margin: 20px 0 10px;
+}
+
+.fechas {
+  display: flex;
+  gap: 20px;
+}
+
+.fechas > div {
+  flex: 1;
+}
+
+.personas {
+  display: flex;
+  gap: 20px;
+}
+
+button[type=\"submit\"] {
+  background-color: #5ca0d3;
+  color: white;
+  padding: 12px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+
+button[type="submit"] {
+  background-color: #5ca0d3;
+  color: white;
+  padding: 12px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #478cbf;
+}
+
+
+.hero-contacto {
+  background-image: url('../img/contacto.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+
+
+
+textarea {
+  width: 100%;
+  height: 120px;
+  resize: none;           /* No permite agrandar */
+  overflow: auto;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.4;
+  white-space: pre-wrap;   /* Mantiene los saltos de línea */
+  word-wrap: break-word;   /* Hace que las palabras largas se dividan */
+}
+
+
+
+
+
+.hero-comentarios {
+  background-image: url('../img/comentario.jpg'); /* usa tu imagen de fondo */
+  background-size: cover;
+  background-position: center;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-comentarios .hero-text {
+  background-color: rgba(153, 102, 51, 0.6);
+  padding: 2rem;
+  border-radius: 20px;
+  color: #fff;
+  text-align: center;
+  max-width: 600px;
+}
+
+
+
+/* Estilo general de fondo */
+.login-body {
+  background-color: #f4f2ef;
+}
+
+/* Contenedor del formulario de login y crear cuenta */
+.login-container {
+  background: white;
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 40px 30px;
+  border-radius: 30px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Título */
+.login-container h2 {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: #222;
+}
+
+/* Inputs */
+.login-container input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border: 1px solid #aaa;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+/* Botón principal */
+.login-container button {
+  width: 100%;
+  background-color: #559fd6;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Link debajo del formulario */
+.crear-cuenta {
+  display: block;
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #004B87;
+  text-decoration: none;
+}
+
+/* Footer específico para login o crear cuenta */
+.footer-login {
+  margin-top: 60px;
+}
+
+
+
+
+/*carrusel*/
+.carrusel {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 20px;
+    padding: 20px;
+    scroll-behavior: smooth;
+}
+
+.item {
+    flex: 0 0 auto;
+    width: 300px;
+    min-height: 250px;
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    text-align: center;
+    padding: 10px;
+}
+
+.item img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.item h3 {
+    margin: 10px 0;
+}
+
+.btn-card {
+    background-color: #007BFF;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-block;
+}
+/*barra del carrucel*/
+
+.carrusel::-webkit-scrollbar {
+    height: 0;
+}
+
+.carrusel {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+}
+
+.carrusel-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.flecha {
+    background: none;
+    border: none;
+    color: #004B87; /* Azul puro para la flecha */
+    font-size: 32px;
+    cursor: pointer;
+    outline: none;
+    transition: color 0.3s;
+    padding: 0 10px;
+}
+
+.flecha:hover {
+    color: #83b4e9; /* Un azul más oscuro al pasar el mouse */
+}
+
+.flecha:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3); /* opcional */
+}
+
+.carrusel {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 20px;
+    padding: 20px 0;
+    width: 100%;
+}
+
+/*carrusel flechas fotantes*/
+
+.carrusel-float-container {
+    position: relative;
+    width: 100%;
+}
+
+.flecha-float {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none; /* Sin fondo */
+    border: none;     /* Sin borde */
+    font-size: 2rem;
+    color: #004B87;
+    cursor: pointer;
+    z-index: 2;
+    padding: 0 10px;
+    transition: color 0.3s ease;
+    outline: none;
+}
+
+.flecha-float:hover {
+    color: #83b4e9; /* Azul más claro al pasar el mouse */
+}
+
+#flecha-izq {
+    left: 10px;
+}
+
+#flecha-der {
+    right: 10px;
+}
+
+
+
+/*contacto*/
+.formulario-contacto {
+  padding: 40px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.formulario-contacto form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.formulario-contacto input,
+.formulario-contacto textarea {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.formulario-contacto button {
+  background-color: #004B87;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+/*correos*/
+.mensaje-alerta {
+  display: inline-block;
+  font-size: 18px;
+  padding: 10px;
+  margin: 10px;
+  color: white;
+  background-color: #ff6b6b;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.sin-mensajes {
+  background-color: #4CAF50; /* Verde */
+  color: white;
+}
+
+.vibrar {
+  animation: vibrar 0.4s infinite;
+}
+
+@keyframes vibrar {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(2deg); }
+  50% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+
+
+
+/*animado*/
+
+.alertas {
+  margin: 20px auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+.alerta {
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  animation: aparecer 0.6s ease-in-out;
+}
+
+.alerta.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alerta.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/*reservar cabaña confirmación y cancelación*/
+.reservas-pendientes {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.reserva-box {
+  background: white;
+  padding: 15px;
+  margin: 20px auto;
+  border-radius: 10px;
+  max-width: 700px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.reserva-botones {
+  margin-top: 10px;
+}
+
+.btn-confirmar,
+.btn-rechazar {
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.btn-confirmar {
+  background-color: #28a745;
+}
+
+.btn-rechazar {
+  background-color: #dc3545;
+}
+
+.no-reservas {
+  margin-top: 40px;
+  text-align: center;
+  font-weight: bold;
+  color: #28a745;
+}
+
+/* mensajes de confirmación */
+#mensaje-flotante {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4BB543;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  z-index: 9999;
+  animation: fadeout 4s forwards;
+  font-weight: bold;
+}
+
+@keyframes fadeout {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; display: none; }
+}
+
+
+/*carrusel comentarios*/
+.carrusel-comentarios {
+  position: relative;
+  max-width: 600px;
+  margin: 20px auto;
+  overflow: hidden;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.carrusel-inner {
+  display: flex;
+  transition: transform 0.4s ease-in-out;
+}
+
+.comentario-slide {
+  min-width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.btn-carrusel {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #004b87;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.btn-carrusel:hover {
+  background: #003660;
+}
+
+.btn-carrusel:first-of-type {
+  left: 10px;
+}
+
+.btn-carrusel:last-of-type {
+  right: 10px;
+}
+
+
+/*estrella*/
+.rating {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 0.3rem;
+  --stroke: #666;
+  --fill: #ffc73a;
+}
+
+.rating input {
+  appearance: unset;
+  display: none;
+}
+
+.rating label {
+  cursor: pointer;
+}
+
+.rating svg {
+  width: 2rem;
+  height: 2rem;
+  overflow: visible;
+  fill: transparent;
+  stroke: var(--stroke);
+  stroke-linejoin: bevel;
+  stroke-dasharray: 12;
+  animation: idle 4s linear infinite;
+  transition: stroke 0.2s, fill 0.5s;
+}
+
+@keyframes idle {
+  from {
+    stroke-dashoffset: 24;
+  }
+}
+
+.rating label:hover svg {
+  stroke: var(--fill);
+}
+
+.rating input:checked ~ label svg {
+  transition: 0s;
+  animation: idle 4s linear infinite, yippee 0.75s backwards;
+  fill: var(--fill);
+  stroke: var(--fill);
+  stroke-opacity: 0;
+  stroke-dasharray: 0;
+  stroke-linejoin: miter;
+  stroke-width: 8px;
+}
+
+@keyframes yippee {
+  0% {
+    transform: scale(1);
+    fill: var(--fill);
+    fill-opacity: 0;
+    stroke-opacity: 1;
+    stroke: var(--stroke);
+    stroke-dasharray: 10;
+    stroke-width: 1px;
+    stroke-linejoin: bevel;
+  }
+
+  30% {
+    transform: scale(0);
+    fill: var(--fill);
+    fill-opacity: 0;
+    stroke-opacity: 1;
+    stroke: var(--stroke);
+    stroke-dasharray: 10;
+    stroke-width: 1px;
+    stroke-linejoin: bevel;
+  }
+
+  30.1% {
+    stroke: var(--fill);
+    stroke-dasharray: 0;
+    stroke-linejoin: miter;
+    stroke-width: 8px;
+  }
+
+  60% {
+    transform: scale(1.2);
+    fill: var(--fill);
+  }
+}
+
+/*inventario*/
+/* 🔳 Fondo principal */
+main {
+  background-color: #f9f9f9;
+  padding: 40px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* 🗂️ Selector de cabaña */
+.selector-cabana select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #fff;
+  color: #333;
+}
+
+/* 📋 Tabla de inventario */
+.tabla-inventario {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tabla-inventario th, 
+.tabla-inventario td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.tabla-inventario th {
+  background-color: #005792;
+  color: white;
+}
+
+.tabla-inventario input[type="text"],
+.tabla-inventario input[type="number"] {
+  width: 90%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* ✅ Checkbox */
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+/* 📝 Campo observación */
+input[name^="observacion_"] {
+  width: 200px;
+}
+
+/* ➕ Formulario: agregar nuevo objeto */
+.form-agregar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.form-agregar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.input-campo {
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  width: 250px;
+  font-size: 14px;
+}
+
+/* 🧮 Botones */
+.botones-acciones {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* 💾 Botón Guardar */
+.btn-guardar {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  
+}
+
+.btn-guardar:hover {
+  background-color: #218838;
+}
+
+/* 🗑️ Botón Eliminar */
+.btn-eliminar {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  
+}
+
+.btn-eliminar:hover {
+  background-color: #c82333;
+}
+
+
+
+/*panel de clientes*/
+.carrusel-contenedor {
+  position: relative;
+  max-width: 1000px;
+  margin: 40px auto;
+  overflow: hidden;
+  padding: 0 40px;
+}
+
+.carrusel {
+  display: flex;
+  transition: transform 0.5s ease;
+  scroll-behavior: smooth;
+  overflow-x: auto;
+  scrollbar-width: none; /* Oculta scrollbar en Firefox */
+}
+
+.carrusel::-webkit-scrollbar {
+  display: none; /* Oculta scrollbar en Chrome */
+}
+
+.carrusel-item {
+  min-width: 300px;
+  flex: 0 0 auto;
+  margin: 10px;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.carrusel-item img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Botones de flechas */
+.carrusel-btn {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 40px;
+  color: #005792;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.3s;
+}
+
+.carrusel-btn:hover {
+  color: #003d6b;
+}
+
+.carrusel-btn.izq {
+  left: 0;
+}
+
+.carrusel-btn.der {
+  right: 0;
+}
+
+
+/*clima*/
+/* 🌤️ Tarjeta de Clima */
+.card {
+  width: 350px;
+  height: 235px;
+  position: relative;
+  padding: 25px;
+  margin: 0 auto;
+  background: radial-gradient(178.94% 106.41% at 26.42% 106.41%, #FFF7B1 0%, rgba(255, 255, 255, 0) 71.88%), #FFFFFF;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+  border-radius: 23px;
+  transition: all 0.8s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+/* 🌤️ Sol y Nubes */
+.container {
+  width: 250px;
+  height: 250px;
+  position: absolute;
+  right: -35px;
+  top: -50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.7);
+}
+
+.cloud {
+  width: 250px;
+}
+
+.front {
+  padding-top: 45px;
+  margin-left: 25px;
+  position: absolute;
+  z-index: 11;
+  animation: clouds 8s infinite ease-in-out;
+}
+
+.back {
+  margin-top: -30px;
+  margin-left: 150px;
+  z-index: 12;
+  animation: clouds 12s infinite ease-in-out;
+}
+
+.right-front, .left-front, .right-back, .left-back {
+  display: inline-block;
+  background-color: #4c9beb;
+}
+
+.right-front {
+  width: 45px;
+  height: 45px;
+  border-radius: 50% 50% 50% 0%;
+  margin-left: -25px;
+}
+
+.left-front {
+  width: 65px;
+  height: 65px;
+  border-radius: 50% 50% 0% 50%;
+}
+
+.right-back {
+  width: 50px;
+  height: 50px;
+  border-radius: 50% 50% 50% 0%;
+  margin-left: -20px;
+}
+
+.left-back {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 0% 50%;
+}
+
+/* ☀️ Sol */
+.sun {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(to right, #fcbb04, #fffc00);
+  border-radius: 60px;
+  position: absolute;
+}
+
+.sunshine {
+  animation: sunshines 2s infinite;
+}
+
+/* 💬 Textos del clima */
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.card-header span:first-child {
+  font-weight: 800;
+  font-size: 15px;
+  color: rgba(87, 77, 51, 0.66);
+}
+
+.card-header span:last-child {
+  font-weight: 700;
+  font-size: 15px;
+  color: rgba(87, 77, 51, 0.33);
+}
+
+.temp {
+  position: absolute;
+  left: 25px;
+  bottom: 12px;
+  font-weight: 700;
+  font-size: 64px;
+  color: rgba(87, 77, 51, 1);
+}
+
+.temp-scale {
+  width: 80px;
+  height: 36px;
+  position: absolute;
+  right: 25px;
+  bottom: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 9px;
+}
+
+.temp-scale span {
+  font-weight: 700;
+  font-size: 13px;
+  color: rgba(87, 77, 51, 0.66);
+}
+
+/* 🔁 Animaciones */
+@keyframes sunshines {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes clouds {
+  0% {
+    transform: translateX(15px);
+  }
+  50% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(15px);
+  }
+}
+
+
+
+
+
+
+/**/
+/* Botón Informe (más compacto y centrado) */
+.download-button {
+  position: relative;
+  display: inline-block;
+  border: none;
+  background: none;
+  margin: 10px auto;
+  padding: 0;
+  transform: scale(0.85);
+  max-width: 9%;
+}
+
+.download-button .docs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background-color: #242a35;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #e8e8e82d;
+  transition: all 0.3s ease;
+}
+
+.download-button:hover .docs {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.download {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: -1;
+  border-radius: 5px;
+  transform: translateY(0%);
+  background-color: #01e056;
+  border: 1px solid #01e0572d;
+  transition: transform 0.4s ease;
+}
+
+.download-button:hover .download {
+  transform: translateY(100%);
+}
+
+.download svg polyline,
+.download svg line {
+  animation: docs 1s infinite;
+}
+
+@keyframes docs {
+  0% { transform: translateY(0%); }
+  50% { transform: translateY(-15%); }
+  100% { transform: translateY(0%); }
+}

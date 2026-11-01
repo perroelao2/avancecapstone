@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+  <title>Nuestras Cabañas - Cabañas Algarrobo</title>
+  <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
+</head>
+
+<body>
+  {% if messages %}
+    <div id="mensaje-flotante">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <!-- Encabezado -->
+  <header>
+    <div class="container-nav">
+      <div class="logo">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" />
+        <span>Cabañas Algarrobo</span>
+      </div>
+      <div class="menu-toggle" id="toggle">☰</div>
+      <nav id="menu">
+        <a href="{% url 'index' %}">Inicio</a>
+        <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'contacto' %}" class="activo">Contacto</a>
+        <a href="{% url 'comentarios' %}">Comentarios</a>
+      </nav>
+
+      {% if nombre %}
+      <a class="btn-login" href="{% url 'panel_cliente' %}">
+        Hola 🖖, {{ nombre|upper }}
+      </a>
+      <a class="btn-login" href="{% url 'logout' %}">Cerrar sesión</a>
+      {% else %}
+      <a class="btn-login" href="{% url 'login' %}">Iniciar Sesión</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero-cabanas">
+    <div class="hero-overlay-box">
+      <h2>Nuestras Cabañas</h2>
+      <p>Elige la cabaña perfecta para tu descanso</p>
+    </div>
+  </section>
+
+  <!-- Iconos -->
+  <section class="iconos-info">
+    <div>
+      <img src="{% static 'img/calendario.png' %}" alt="Reserva" width="60">
+      <p>Reserva 100%<br>en línea</p>
+    </div>
+    <div>
+      <img src="{% static 'img/persona.png' %}" alt="Atención" width="60">
+      <p>Atención<br>personalizada</p>
+    </div>
+    <div>
+      <img src="{% static 'img/bosque.png' %}" alt="Naturaleza" width="60">
+      <p>Entorno<br>natural</p>
+    </div>
+  </section>
+
+  <!-- Listado de cabañas desde la BD -->
+  <section class="cabanas-listado">
+    {% for c in cabanas %}
+    <div class="cabanas-card">
+      <div class="cabanas-imagenes-multiples">
+        <img src="{% static 'img/familiar.jpg' %}" alt="{{ c.nombre }}">
+        <img src="{% static 'img/familiar.jpg' %}" alt="{{ c.nombre }}">
+        <img src="{% static 'img/familiar.jpg' %}" alt="{{ c.nombre }}">
+      </div>
+
+      <div class="cabanas-info">
+        <h3>{{ c.nombre }}</h3>
+        <p><strong>🧍 X {{ c.capacidad }}</strong></p>
+        <p>{{ c.ubicacion }}</p>
+        <p><strong>Precio por noche:</strong> ${{ c.precio_por_noche }}</p>
+        <p>{{ c.descripcion|default:"Una agradable cabaña para disfrutar en familia o amigos." }}</p>
+        <p>
+          Estado:
+          {% if c.estado == "Disponible" %}
+          <span style="color: green; font-weight: bold;">Disponible</span>
+          {% else %}
+          <span style="color: red; font-weight: bold;">No Disponible</span>
+          {% endif %}
+        </p>
+      </div>
+
+      <div class="cabanas-boton">
+        {% if c.estado == "Disponible" %}
+        <a href="{% url 'reservar_cabana' c.id_cabana %}" class="btn-card">Reservar</a>
+        {% else %}
+        <button class="btn-card" style="background-color: #ccc; cursor: not-allowed;" disabled>No Disponible</button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-info">
+      <div>
+        <p>correo@ejemplo.com</p>
+        <p>+56900000000</p>
+        <p>El Manzano, Parcela 5, Algarrobo</p>
+      </div>
+      <div>
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Política de privacidad</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+
+</html>

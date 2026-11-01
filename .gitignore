@@ -1,6 +1,22 @@
 # Dependencias de Node y Electron (se instalan con npm install)
 node_modules/
 
+# Entornos virtuales de Python
+venv/
+cabanas-algarrobo/venv/
+.venv/
+env/
+
+# Caché y archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Bases de datos temporales / locales SQLite
+*.sqlite3
+cabanas-algarrobo/cabanas-main/db.sqlite3
+
 # Logs y archivos temporales del sistema
 npm-debug.log*
 yarn-debug.log*

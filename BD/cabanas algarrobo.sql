@@ -123,7 +123,8 @@ CREATE TABLE `comentarios` (
   `correo` varchar(100),
   `comentario` text,
   `fecha` datetime DEFAULT (now()),
-  `id_cabana` integer
+  `id_cabana` integer,
+  `estrellas` integer DEFAULT 5
 );
 
 CREATE TABLE `fotos_cabana` (

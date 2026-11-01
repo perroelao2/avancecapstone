@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crear Cuenta - Cabañas Algarrobo</title>
+  <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+</head>
+<body class="login-body">
+  {% if messages %}
+    <div id="mensaje-flotante">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <!-- NAVBAR -->
+  <header>
+    <div class="container-nav">
+      <div class="logo">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" />
+        <span>Cabañas Algarrobo</span>
+      </div>
+      <div class="menu-toggle" id="toggle">☰</div>
+      <nav id="menu">
+        <a href="{% url 'index' %}">Inicio</a>
+        <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'contacto' %}">Contacto</a>
+        <a href="{% url 'comentarios' %}">Comentarios</a>
+      </nav>
+      <a class="btn-login" href="{% url 'login' %}">Iniciar Sesión</a>
+    </div>
+  </header>
+
+  <!-- FORMULARIO -->
+  <main>
+    <div class="login-container">
+      <h2>Crear Cuenta</h2>
+      <form method="post">
+        {% csrf_token %}
+        <input type="text" name="nombre" placeholder="Nombre completo" required />
+        <input type="email" name="correo" placeholder="Correo electrónico" required />
+        <input type="password" name="contrasena1" placeholder="Contraseña" required />
+        <input type="password" name="contrasena2" placeholder="Confirmar contraseña" required />
+        <button type="submit">Registrarse</button>
+      </form>
+
+      <a class="crear-cuenta" href="{% url 'login' %}">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer-login">
+    <div class="footer-info">
+      <div>
+        <p>correo@ejemplo.com</p>
+        <p>+56900000000</p>
+        <p>El Manzano, Parcela 5, Algarrobo</p>
+      </div>
+      <div>
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Política de privacidad</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>
+

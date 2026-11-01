@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+    <title>Cabañas Algarrobo Connect</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/estilo.css' %}">
+</head>
+
+<body>
+      {% if messages %}
+    <div id="mensaje-flotante">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+    <!-- Encabezado -->
+    <header>
+        <div class="container-nav">
+            <div class="logo">
+                <img src="{% static 'img/logo.png' %}" alt="Logo" />
+                <span>Cabañas Algarrobo</span>
+            </div>
+
+            <!-- Botón hamburguesa -->
+            <div class="menu-toggle" id="toggle">
+                ☰
+            </div>
+
+            <!-- Menú con ID necesario -->
+            <nav id="menu">
+                <a href="{% url 'index' %}">Inicio</a>
+                <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+                <a href="{% url 'contacto' %}">Contacto</a>
+                <a href="{% url 'comentarios' %}" class="activo">Comentarios</a>
+            </nav>
+
+            {% if nombre %}
+            <a class="btn-login" href="{% url 'panel_cliente' %}">
+                Hola 🖖, {{ nombre|upper }}
+            </a>
+            <a class="btn-login" href="{% url 'logout' %}">Cerrar sesión</a>
+            {% else %}
+            <a class="btn-login" href="{% url 'login' %}">Iniciar Sesión</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Sección principal con imagen -->
+    <section class="hero">
+        <div class="overlay">
+            <h2>Encuentra tu lugar ideal en Algarrobo</h2>
+            <p>Reserva fácilmente tu cabaña ideal desde donde estés</p>
+            <a href="{% url 'ver_cabanas' %}" class="btn-hero">Ver Cabañas</a>
+        </div>
+    </section>
+
+    <!-- Cabañas destacadas -->
+<section class="destacadas">
+    <h2>Cabañas destacadas</h2>
+    <div class="carrusel-float-container">
+        <button class="flecha-float" id="flecha-izq">❮</button>
+
+        <div class="carrusel" id="carrusel">
+            {% for c in cabanas_disponibles %}
+            <div class="item">
+                <img src="{% static 'img/familiar.jpg' %}" alt="{{ c.nombre }}">
+                <h3>{{ c.nombre }}</h3>
+                <a href="{% url 'reservar_cabana' c.id_cabana %}" class="btn-card">Reservar</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button class="flecha-float" id="flecha-der">❯</button>
+    </div>
+</section>
+
+
+    <footer>
+        <div class="footer-info">
+            <div>
+                <p>correo@ejemplo.com</p>
+                <p>+56900000000</p>
+                <p>El Manzano, Parcela 5, Algarrobo</p>
+            </div>
+            <div>
+                <a href="#">Términos y condiciones</a>
+                <a href="#">Política de privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+
+</html>

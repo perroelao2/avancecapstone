@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+  <title>Iniciar Sesión - Cabañas Algarrobo</title>
+  <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
+</head>
+<body class="login-body">
+  {% if messages %}
+    <div id="mensaje-flotante">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if mensaje %}
+    <div id="mensaje-flotante">
+      <p>{{ mensaje }}</p>
+    </div>
+  {% endif %}
+  <!-- Encabezado -->
+  <header>
+    <div class="container-nav">
+      <div class="logo">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" />
+        <span>Cabañas Algarrobo</span>
+      </div>
+
+      <!-- Botón hamburguesa -->
+      <div class="menu-toggle" id="toggle">☰</div>
+
+      <!-- Menú con ID -->
+      <nav id="menu">
+        <a href="{% url 'index' %}">Inicio</a>
+        <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'contacto' %}">Contacto</a>
+        <a href="{% url 'comentarios' %}" class="activo">Comentarios</a>
+      </nav>
+
+      <a class="btn-login" href="{% url 'login' %}">Iniciar Sesión</a>
+    </div>
+  </header>
+
+  <!-- Caja de login -->
+  <main class="login-container">
+    <h2>Iniciar Sesión</h2>
+    <form class="login-form" method="post">
+      {% csrf_token %}
+      <input type="email" name="correo" placeholder="Correo electrónico" required />
+      <input type="password" name="clave" placeholder="Contraseña" required />
+      <button type="submit">Iniciar sesión</button>
+    </form>
+    <a href="{% url 'crear_cuenta' %}" class="crear-cuenta">Crear cuenta</a>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-login">
+    <div style="height: 20px; background-color: #004B87;"></div>
+  </footer>
+
+  <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>
+

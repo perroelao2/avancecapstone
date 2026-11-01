@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Cliente</title>
+  <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
+  <link rel="icon" href="{% static 'img/favicon.png' %}" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+
+<body>
+  {% if messages %}
+    <div id="mensaje-flotante">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <header>
+    <div class="container-nav">
+      <div class="logo">
+        <img src="{% static 'img/logo.png' %}" alt="Logo">
+        <span>Cabañas Algarrobo</span>
+      </div>
+      <div class="menu-toggle" id="toggle">☰</div>
+      <nav id="menu">
+        <a href="{% url 'index' %}">Inicio</a>
+        <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'contacto' %}">Contacto</a>
+        <a href="{% url 'comentarios' %}">Comentarios</a>
+      </nav>
+      <a class="btn-login" href="{% url 'logout' %}">Cerrar Sesión</a>
+    </div>
+  </header>
+
+<main style="padding: 40px; text-align: center;">
+    <div style="background-color: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <h2>Bienvenido/a {{ nombre|default:"Cliente" }}</h2>
+        <p>Elige una cabaña para reservar:</p>
+
+        <div class="card" id="clima-card" style="margin: 40px auto;">
+            <div class="container">
+                <div class="cloud front">
+                    <span class="left-front"></span>
+                    <span class="right-front"></span>
+                </div>
+                <span class="sun sunshine"></span>
+                <span class="sun"></span>
+                <div class="cloud back">
+                    <span class="left-back"></span>
+                    <span class="right-back"></span>
+                </div>
+            </div>
+            <div class="card-header">
+                <span id="clima-ubicacion">Algarrobo, Chile</span>
+                <span id="clima-fecha">Hoy</span>
+            </div>
+            <span class="temp" id="clima-temp">--°</span>
+            <div class="temp-scale"><span>°C</span></div>
+        </div>
+
+        <div class="carrusel-contenedor">
+            <button class="carrusel-btn izq" onclick="moverCarrusel(-1)">←</button>
+            <div class="carrusel" id="carrusel">
+                {% for c in cabanas %}
+                <div class="carrusel-item">
+                    <img src="{% static 'img/familiar.jpg' %}" alt="{{ c.nombre }}">
+                    <h3>{{ c.nombre }}</h3>
+                    <p>Capacidad: {{ c.capacidad }} personas</p>
+                    <p>Ubicación: {{ c.ubicacion }}</p>
+                    <a href="{% url 'reservar_cabana' c.id_cabana %}" class="btn-card">Reservar</a>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carrusel-btn der" onclick="moverCarrusel(1)">→</button>
+        </div>
+
+        <h3 style="margin-top: 40px;">Tu ruta hacia Cabañas en Algarrobo</h3>
+        <div id="mapa" style="height: 600px; width: 600px; margin: 20px auto; border-radius: 10px; display: block;"></div>
+        <p id="ubicacion-info" style="margin-top: 10px; font-weight: bold;"></p>
+    </div>
+</main>
+
+  <footer>
+    <div class="footer-info">
+      <div>
+        <p>correo@ejemplo.com</p>
+        <p>+56900000000</p>
+        <p>El Manzano, Parcela 5, Algarrobo</p>
+      </div>
+      <div>
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Política de privacidad</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const ORS_API_KEY = "5b3ce3597851110001cf6248f4634844f6c24925bd3a59d289cb7a22";
+    const destino = [-71.6736, -33.3687];
+    const destinoLeaflet = [...destino].reverse();
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const map = L.map("mapa").setView(destinoLeaflet, 13);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap",
+        maxZoom: 19,
+      }).addTo(map);
+
+      L.marker(destinoLeaflet).addTo(map).bindPopup("📍 Algarrobo");
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async pos => {
+          const origen = [pos.coords.longitude, pos.coords.latitude];
+          const origenLeaflet = [origen[1], origen[0]];
+
+          L.marker(origenLeaflet).addTo(map).bindPopup("📍 Tú estás aquí").openPopup();
+
+          const resAuto = await fetch("https://api.openrouteservice.org/v2/directions/driving-car/geojson", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: ORS_API_KEY,
+            },
+            body: JSON.stringify({ coordinates: [origen, destino] }),
+          });
+
+          const dataAuto = await resAuto.json();
+          const ruta = L.geoJSON(dataAuto, { style: { color: "#0074D9", weight: 5 } }).addTo(map);
+          map.fitBounds(ruta.getBounds());
+
+          const distanciaKm = (dataAuto.features[0].properties.summary.distance / 1000).toFixed(2);
+          const duracionMin = Math.round(dataAuto.features[0].properties.summary.duration / 60);
+          const duracionBus = Math.round(duracionMin * 1.25);
+
+          const texto = `
+            <strong>📍 Distancia:</strong> ${distanciaKm} km<br>
+            <strong>🚗 Auto:</strong> ${duracionMin} min<br>
+            <strong>🚌 Bus:</strong> ${duracionBus} min
+          `;
+          L.popup().setLatLng(ruta.getBounds().getCenter()).setContent(texto).openOn(map);
+
+          // Geocodificación Inversa
+          const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${origen[1]}&lon=${origen[0]}&accept-language=es`);
+          const geoData = await geoRes.json();
+          document.getElementById("ubicacion-info").textContent = `📍 Estás en: ${geoData.display_name}`;
+        });
+      }
+    });
+  </script>
+
+  <script>
+    function moverCarrusel(direccion) {
+      const carrusel = document.getElementById("carrusel");
+      const anchoItem = carrusel.querySelector('.carrusel-item').offsetWidth + 20;
+      carrusel.scrollBy({ left: direccion * anchoItem, behavior: 'smooth' });
+    }
+
+    async function obtenerClima() {
+      const apiKey = "60fbbf06bee51895062dda0108a703bf";
+      const ciudad = "Algarrobo,CL";
+
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&appid=${apiKey}&units=metric&lang=es`);
+        const datos = await res.json();
+        const temp = Math.round(datos.main.temp);
+        const hoy = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
+        document.getElementById("clima-ubicacion").textContent = "Algarrobo, Chile";
+        document.getElementById("clima-fecha").textContent = hoy;
+        document.getElementById("clima-temp").textContent = `${temp}°`;
+      } catch (error) {
+        console.error("Error al obtener el clima:", error);
+      }
+    }
+    document.addEventListener("DOMContentLoaded", obtenerClima);
+  </script>
+
+  <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+
+</html>

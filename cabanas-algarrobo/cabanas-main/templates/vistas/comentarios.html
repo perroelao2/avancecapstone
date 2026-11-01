@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comentarios - Cabañas Algarrobo</title>
+  <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+</head>
+
+<body>
+  {% if messages %}
+    <div id="mensaje-flotante">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <!-- Encabezado -->
+  <header>
+    <div class="container-nav">
+      <div class="logo">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" />
+        <span>Cabañas Algarrobo</span>
+      </div>
+      <div class="menu-toggle" id="toggle">☰</div>
+      <nav id="menu">
+        <a href="{% url 'index' %}">Inicio</a>
+        <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'contacto' %}">Contacto</a>
+        <a href="{% url 'comentarios' %}" class="activo">Comentarios</a>
+      </nav>
+      {% if nombre %}
+      <a class="btn-login" href="{% url 'panel_cliente' %}">
+        Hola 🖖, {{ nombre|upper }}
+      </a>
+      <a class="btn-login" href="{% url 'logout' %}">Cerrar sesión</a>
+      {% else %}
+      <a class="btn-login" href="{% url 'login' %}">Iniciar Sesión</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero-comentarios">
+    <div class="hero-text">
+      <h2>Tu opinión importa</h2>
+      <p>Déjanos tus comentarios sobre tu experiencia</p>
+    </div>
+  </section>
+
+  <!-- Formulario -->
+  <section class="formulario-reserva-seccion">
+    <div class="formulario-reserva-box">
+      <form method="post">
+        {% csrf_token %}
+        <input type="text" name="nombre" placeholder="Tu nombre" required>
+        <input type="email" name="correo" placeholder="Tu correo" required>
+
+        <label for="comentario">Comentario</label>
+        <textarea name="comentario" id="comentario" placeholder="Escribe tu experiencia..." required></textarea>
+
+        <br><br>
+        <label>Califica tu experiencia:</label>
+        <div class="rating">
+          {% for i in "54321" %}
+          <input type="radio" id="star-{{ i }}" name="estrellas" value="{{ i }}">
+          <label for="star-{{ i }}">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
+            </svg>
+          </label>
+          {% endfor %}
+        </div>
+
+        <br>
+        <button type="submit">Enviar comentario</button>
+        <br><br><br>
+        <hr>
+
+        <h3>Comentarios Recientes</h3>
+        {% for c in comentarios %}
+        <div style="margin-bottom: 20px;">
+          <strong>{{ c.nombre }}</strong> dijo:
+          <p>{{ c.comentario }}</p>
+          <p class="estrellas">
+            {% for i in "12345"|make_list %}
+            {% if forloop.counter <= c.estrellas %} <span style="color: #ffc73a;">★</span>
+              {% else %}
+              <span style="color: #ccc;">☆</span>
+              {% endif %}
+              {% endfor %}
+          </p>
+
+          <small>{{ c.fecha }}</small>
+        </div>
+        {% empty %}
+        <p>No hay comentarios todavía.</p>
+        {% endfor %}
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-info">
+      <div>
+        <p>correo@ejemplo.com</p>
+        <p>+56900000000</p>
+        <p>El Manzano, Parcela 5, Algarrobo</p>
+      </div>
+      <div>
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Política de privacidad</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+
+</html>
