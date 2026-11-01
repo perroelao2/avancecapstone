@@ -174,30 +174,61 @@ python manage.py runserver 127.0.0.1:8000
 
 ---
 
-## 🐧 Guía de Instalación y Despliegue en Linux (Ubuntu / Debian / WSL)
+## 🐧 Guía de Instalación y Despliegue en Linux
 
-### 1. Instalar Requisitos del Sistema
-Ejecuta en tu terminal:
+A continuación encontrarás los comandos de instalación según tu distribución de Linux (**Ubuntu/Debian**, **Arch Linux** o **Fedora**).
+
+---
+
+### 1. Instalación de Paquetes del Sistema por Distribución
+
+#### 🏹 Opción A: Arch Linux / Manjaro / EndeavourOS
+En Arch Linux, `pacman` instala los paquetes oficiales y es necesario inicializar el directorio de datos de MariaDB antes de iniciar el servicio:
 
 ```bash
+# 1. Actualizar repositorios e instalar paquetes base
+sudo pacman -Syu nodejs npm python python-pip mariadb git
+
+# 2. Inicializar el directorio de datos de MariaDB (requerido en Arch Linux)
+sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+
+# 3. Iniciar y habilitar el servicio de MariaDB
+sudo systemctl enable --now mariadb
+```
+
+#### 🔵 Opción B: Ubuntu / Debian / Linux Mint / WSL
+```bash
+# 1. Actualizar repositorios e instalar dependencias
 sudo apt update
 sudo apt install -y nodejs npm python3 python3-venv python3-pip mariadb-server git
+
+# 2. Iniciar y habilitar el servicio de MariaDB
+sudo systemctl enable --now mariadb
+```
+
+#### 🎩 Opción C: Fedora / RHEL / Rocky Linux
+```bash
+# 1. Instalar dependencias con DNF
+sudo dnf install -y nodejs npm python3 python3-pip mariadb-server git
+
+# 2. Iniciar y habilitar el servicio de MariaDB
+sudo systemctl enable --now mariadb
 ```
 
 ---
 
-### 2. Configurar la Base de Datos en Linux
-1. Inicia y habilita el servicio de MariaDB / MySQL:
-   ```bash
-   sudo systemctl start mariadb
-   sudo systemctl enable mariadb
-   ```
-2. Crea la base de datos e importa el esquema:
-   ```bash
-   sudo mariadb -e "CREATE DATABASE IF NOT EXISTS algarrobo_connect CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-   sudo mariadb algarrobo_connect < "BD/cabanas algarrobo.sql"
-   ```
-3. Asegura que el usuario `root` local pueda conectarse sin contraseña o configura las credenciales correspondientes en `db.js`, `settings.py` y `database.py`.
+### 2. Configurar la Base de Datos
+Una vez que el servicio de MariaDB esté corriendo:
+
+```bash
+# 1. Crear la base de datos
+sudo mariadb -e "CREATE DATABASE IF NOT EXISTS algarrobo_connect CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 2. Importar el script SQL maestro
+sudo mariadb algarrobo_connect < "BD/cabanas algarrobo.sql"
+```
+
+*(Si usas usuario `root` con contraseña en tu entorno local, añade `-u root -p` en los comandos).*
 
 ---
 
@@ -205,36 +236,41 @@ sudo apt install -y nodejs npm python3 python3-venv python3-pip mariadb-server g
 Desde la raíz del repositorio (`avancecapstone/`):
 
 ```bash
-# 1. Instalar dependencias de Node
+# 1. Instalar dependencias de Node.js
 npm install
 
-# 2. Probar la conexión a la BD
+# 2. (Opcional) Verificar la conexión a la base de datos
 node test-db.js
 
-# 3. Iniciar la aplicación
+# 3. Iniciar la aplicación de escritorio
 npm start
 ```
 
 ---
 
-### 4. Configurar el Entorno Virtual de Python y Levantar Servicios Web
+### 4. Configurar Entorno Python y Levantar Servicios Web (FastAPI y Django)
+
+Abre otra terminal o corre los procesos:
 
 ```bash
 cd cabanas-algarrobo
 
-# 1. Crear y activar entorno virtual
+# 1. Crear el entorno virtual de Python
 python3 -m venv venv
+
+# 2. Activar el entorno virtual
 source venv/bin/activate
 
-# 2. Instalar dependencias
+# 3. Instalar dependencias de Python
 pip install -r requirements.txt
 
-# 3. Levantar Microservicio FastAPI (Terminal 1)
+# 4. Levantar Microservicio FastAPI (Terminal 1)
 cd usuaruios_api
-uvicorn main:app --host 127.0.0.1 --port 8001 &
+uvicorn main:app --host 127.0.0.1 --port 8001
 
-# 4. Levantar Plataforma Web Django (Terminal 2)
-cd ../cabanas-main
+# 5. Levantar Plataforma Web Django (Terminal 2)
+# (Abre una nueva terminal, activa el venv con source cabanas-algarrobo/venv/bin/activate)
+cd cabanas-algarrobo/cabanas-main
 python manage.py migrate
 python manage.py runserver 127.0.0.1:8000
 ```
