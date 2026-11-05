@@ -740,15 +740,22 @@ function renderComunicaciones() {
   waBox.innerHTML = (comunicaciones.whatsapp || []).length
     ? comunicaciones.whatsapp
         .map(
-          w => `
+          w => {
+            const cleanPhone = String(w.telefono_destino || '').replace(/[^0-9]/g, '');
+            const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(w.mensaje || '')}`;
+            return `
         <div class="mini-list-item">
           <div>
             <strong>📱 ${w.telefono_destino}</strong>
             ${w.id_reserva ? `<span class="badge">Reserva #${w.id_reserva} (${w.cabana_nombre || ''})</span>` : ''}
             <div style="margin-top:4px;">${w.mensaje}</div>
           </div>
-          <span style="font-size:12px; color:#667;">${String(w.fecha_envio).slice(0, 16).replace('T', ' ')}</span>
-        </div>`
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:12px; color:#667;">${String(w.fecha_envio).slice(0, 16).replace('T', ' ')}</span>
+            <a href="${waUrl}" target="_blank" class="btn-pill btn-secondary btn-sm" style="text-decoration:none; padding:4px 8px; font-size:11px; background:#25D366; color:white; border-color:#25D366;">Abrir WhatsApp ↗</a>
+          </div>
+        </div>`;
+          }
         )
         .join('')
     : `<p style="font-size:13px; color:#666;">Sin mensajes de WhatsApp registrados.</p>`;

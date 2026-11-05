@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobante Webpay Plus - Cabañas Algarrobo</title>
+    <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+    <style>
+        .voucher-box {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 35px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        .voucher-header {
+            text-align: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        .badge-success {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .voucher-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .voucher-row strong {
+            color: #334155;
+        }
+        .voucher-total {
+            font-size: 20px;
+            color: #004B87;
+            font-weight: bold;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body class="login-body">
+    <header>
+        <div class="container-nav">
+            <div class="logo">
+                <img src="{% static 'img/logo.png' %}" alt="Logo" />
+                <span>Cabañas Algarrobo</span>
+            </div>
+            <a class="btn-login" href="{% url 'panel_cliente' %}">Volver al Panel</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="voucher-box">
+            <div class="voucher-header">
+                <span class="badge-success">✔ PAGO EXITOSO Y APROBADO</span>
+                <h2 style="color: #004B87; margin-top: 15px;">Comprobante de Pago Webpay Plus</h2>
+                <p style="color: #64748b; font-size: 14px;">Tu reserva en Cabañas Algarrobo ha quedado confirmada.</p>
+            </div>
+
+            <div class="voucher-row">
+                <span>Orden de Compra:</span>
+                <strong>{{ buy_order }}</strong>
+            </div>
+            <div class="voucher-row">
+                <span>Código de Autorización Transbank:</span>
+                <strong>{{ auth_code }}</strong>
+            </div>
+            <div class="voucher-row">
+                <span>Medio de Pago:</span>
+                <strong>Tarjeta Bancaria (Webpay Plus)</strong>
+            </div>
+            <div class="voucher-row">
+                <span>Número de Tarjeta:</span>
+                <strong>**** **** **** {{ card_last4 }}</strong>
+            </div>
+            <div class="voucher-row">
+                <span>Reserva Asociada:</span>
+                <strong>#{{ reserva.id_reserva }} - {{ reserva.cabana.nombre }}</strong>
+            </div>
+            <div class="voucher-row">
+                <span>Fechas de Estadía:</span>
+                <strong>{{ reserva.fecha_inicio }} al {{ reserva.fecha_fin }}</strong>
+            </div>
+            <div class="voucher-row voucher-total">
+                <span>Monto Total Pagado:</span>
+                <span>${{ amount }}</span>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
+                    Se ha enviado un mensaje de confirmación por WhatsApp a tu número registrado.
+                </p>
+                <a href="{% url 'panel_cliente' %}" style="display: inline-block; background-color: #004B87; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                    Ir a Mis Reservas
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer-login">
+        <div style="height: 20px; background-color: #004B87;"></div>
+    </footer>
+</body>
+</html>

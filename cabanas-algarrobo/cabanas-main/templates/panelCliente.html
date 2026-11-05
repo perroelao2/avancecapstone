@@ -100,55 +100,83 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const ORS_API_KEY = "5b3ce3597851110001cf6248f4634844f6c24925bd3a59d289cb7a22";
     const destino = [-71.6736, -33.3687];
     const destinoLeaflet = [...destino].reverse();
 
     document.addEventListener("DOMContentLoaded", () => {
-      const map = L.map("mapa").setView(destinoLeaflet, 13);
+      const map = L.map("mapa").setView(destinoLeaflet, 11);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap",
         maxZoom: 19,
       }).addTo(map);
 
-      L.marker(destinoLeaflet).addTo(map).bindPopup("📍 Algarrobo");
+      L.marker(destinoLeaflet).addTo(map).bindPopup("📍 Cabañas Algarrobo").openPopup();
+
+      async function calcularRuta(origenLng, origenLat, origenTexto = "Punto de Partida") {
+        const origenLeaflet = [origenLat, origenLng];
+        L.marker(origenLeaflet).addTo(map).bindPopup(`📍 ${origenTexto}`).openPopup();
+
+        try {
+          // API 4: OSRM REST API - Cálculo de ruta por carretera, distancia y tiempos
+          const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${origenLng},${origenLat};${destino[0]},${destino[1]}?overview=full&geometries=geojson`;
+          const res = await fetch(osrmUrl);
+          const data = await res.json();
+
+          if (data && data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
+            const geojson = {
+              type: "Feature",
+              properties: {},
+              geometry: route.geometry
+            };
+
+            const rutaLayer = L.geoJSON(geojson, { style: { color: "#0074D9", weight: 5, opacity: 0.85 } }).addTo(map);
+            map.fitBounds(rutaLayer.getBounds(), { padding: [40, 40] });
+
+            const distanciaKm = (route.distance / 1000).toFixed(1);
+            const duracionMin = Math.round(route.duration / 60);
+            const horas = Math.floor(duracionMin / 60);
+            const mins = duracionMin % 60;
+            const tiempoStr = horas > 0 ? `${horas}h ${mins}m` : `${duracionMin} min`;
+            const duracionBus = Math.round(duracionMin * 1.25);
+
+            const textoPopup = `
+              <div style="font-size:13px; line-height:1.6;">
+                <strong style="color:#004B87;">🚗 Ruta Vial Calculada (OSRM API):</strong><br>
+                📏 <strong>Distancia:</strong> ${distanciaKm} km<br>
+                ⏱️ <strong>Tiempo en Auto:</strong> ${tiempoStr}<br>
+                🚌 <strong>Tiempo estimado en Bus:</strong> ~${Math.round(duracionBus/60)}h ${duracionBus%60}m
+              </div>
+            `;
+            L.popup().setLatLng(rutaLayer.getBounds().getCenter()).setContent(textoPopup).openOn(map);
+            document.getElementById("ubicacion-info").innerHTML = `🚗 Trayecto desde <strong>${origenTexto}</strong>: ${distanciaKm} km (${tiempoStr} aprox.)`;
+          }
+        } catch (err) {
+          console.error("Error al calcular ruta OSRM:", err);
+        }
+      }
 
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async pos => {
-          const origen = [pos.coords.longitude, pos.coords.latitude];
-          const origenLeaflet = [origen[1], origen[0]];
-
-          L.marker(origenLeaflet).addTo(map).bindPopup("📍 Tú estás aquí").openPopup();
-
-          const resAuto = await fetch("https://api.openrouteservice.org/v2/directions/driving-car/geojson", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: ORS_API_KEY,
-            },
-            body: JSON.stringify({ coordinates: [origen, destino] }),
-          });
-
-          const dataAuto = await resAuto.json();
-          const ruta = L.geoJSON(dataAuto, { style: { color: "#0074D9", weight: 5 } }).addTo(map);
-          map.fitBounds(ruta.getBounds());
-
-          const distanciaKm = (dataAuto.features[0].properties.summary.distance / 1000).toFixed(2);
-          const duracionMin = Math.round(dataAuto.features[0].properties.summary.duration / 60);
-          const duracionBus = Math.round(duracionMin * 1.25);
-
-          const texto = `
-            <strong>📍 Distancia:</strong> ${distanciaKm} km<br>
-            <strong>🚗 Auto:</strong> ${duracionMin} min<br>
-            <strong>🚌 Bus:</strong> ${duracionBus} min
-          `;
-          L.popup().setLatLng(ruta.getBounds().getCenter()).setContent(texto).openOn(map);
-
-          // Geocodificación Inversa
-          const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${origen[1]}&lon=${origen[0]}&accept-language=es`);
-          const geoData = await geoRes.json();
-          document.getElementById("ubicacion-info").textContent = `📍 Estás en: ${geoData.display_name}`;
-        });
+        navigator.geolocation.getCurrentPosition(
+          async pos => {
+            let nombreOrigen = "Tu ubicación actual";
+            try {
+              const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=es`);
+              const geoData = await geoRes.json();
+              if (geoData && geoData.address) {
+                nombreOrigen = geoData.address.city || geoData.address.town || geoData.address.county || "Tu ubicación";
+              }
+            } catch (_) {}
+            calcularRuta(pos.coords.longitude, pos.coords.latitude, nombreOrigen);
+          },
+          () => {
+            // Fallback turístico si no hay GPS: cálculo de ruta desde Santiago Centro
+            calcularRuta(-70.6506, -33.4372, "Santiago Centro");
+          },
+          { timeout: 5000 }
+        );
+      } else {
+        calcularRuta(-70.6506, -33.4372, "Santiago Centro");
       }
     });
   </script>

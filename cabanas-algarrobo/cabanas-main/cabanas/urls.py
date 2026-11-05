@@ -17,6 +17,8 @@ urlpatterns = [
     path('comentarios/', views.comentarios, name='comentarios'),
     path('crear-cuenta/', views.crear_cuenta, name='crear_cuenta'),
     path('pago-transferencia/', views.pago_transferencia, name='pago_transferencia'),
+    path('pago/webpay/iniciar/', views.iniciar_pago_webpay, name='iniciar_pago_webpay'),
+    path('pago/webpay/retorno/', views.retorno_pago_webpay, name='retorno_pago_webpay'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.BASE_DIR / "static")

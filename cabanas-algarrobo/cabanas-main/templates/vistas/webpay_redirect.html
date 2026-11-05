@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Conectando con Webpay Plus...</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 450px;
+        }
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #f75500;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body onload="document.forms['webpay_form'].submit();">
+    <div class="card">
+        <h2 style="color: #004B87;">Transbank Webpay Plus</h2>
+        <div class="spinner"></div>
+        <p>Conectando con la pasarela de pagos segura...</p>
+        <p style="font-size: 13px; color: #777;">Por favor espera unos segundos sin recargar esta página.</p>
+        
+        <form name="webpay_form" action="{{ url }}" method="POST">
+            <input type="hidden" name="token_ws" value="{{ token }}" />
+        </form>
+    </div>
+</body>
+</html>

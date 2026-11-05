@@ -656,11 +656,14 @@ ipcMain.handle('notificaciones:add', async (_, { id_usuario, titulo, mensaje }) 
 });
 
 ipcMain.handle('whatsapp:send', async (_, { telefono_destino, id_reserva, mensaje }) => {
-  await pool.query(
+  const [res] = await pool.query(
     'INSERT INTO historial_mensajes_whatsapp (telefono_destino, id_reserva, mensaje) VALUES (?, ?, ?)',
     [telefono_destino, id_reserva || null, mensaje]
   );
-  return { ok: true };
+  const cleanPhone = (telefono_destino || '').replace(/\D/g, '');
+  const encodedMsg = encodeURIComponent(mensaje);
+  const waApiUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMsg}`;
+  return { ok: true, id_mensaje: res.insertId, waApiUrl };
 });
 
 ipcMain.handle('promociones:save', async (_, { id_promocion, codigo, porcentaje_descuento, fecha_expiracion, activo }) => {

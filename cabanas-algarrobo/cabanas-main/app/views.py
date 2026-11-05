@@ -138,6 +138,154 @@ def pago_transferencia(request):
     return render(request, 'vistas/pago_transferencia.html', {'nombre': nombre, 'reserva': reserva})
 
 
+# Integración Pasarela de Pagos: Transbank Webpay Plus REST API (Sandbox)
+WEBPAY_COMMERCE_CODE = '597055555532'
+WEBPAY_API_KEY_SECRET = '579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C'
+WEBPAY_URL_CREAR = 'https://webpay3gint.transbank.cl/rswebpaytransaction/api/webpay/v1.2/transactions'
+
+
+def iniciar_pago_webpay(request):
+    id_usuario = request.session.get('usuario_id')
+    if not id_usuario:
+        messages.warning(request, "Debes iniciar sesión para realizar el pago.")
+        return redirect('login')
+
+    pago_id = request.GET.get('pago_id')
+    reserva = None
+    if pago_id:
+        pago = Pago.objects.filter(id_pago=pago_id).first()
+        if pago and pago.id_reserva:
+            reserva = Reserva.objects.filter(id_reserva=pago.id_reserva).first()
+    if not reserva:
+        reserva = Reserva.objects.filter(usuario_id=id_usuario, estado='Pendiente').order_by('id_reserva').last()
+    if not reserva:
+        reserva = Reserva.objects.filter(usuario_id=id_usuario).order_by('id_reserva').last()
+    if not reserva:
+        messages.error(request, "No tienes reservas pendientes para pagar.")
+        return redirect('panel_cliente')
+
+    monto = 50000
+    if reserva.cabana and reserva.cabana.precio_por_noche and reserva.cabana.precio_por_noche > 0:
+        noches = (reserva.fecha_fin - reserva.fecha_inicio).days
+        monto = int(reserva.cabana.precio_por_noche * (noches if noches > 0 else 1))
+
+    buy_order = f"ORD-{reserva.id_reserva}-{int(timezone.now().timestamp())}"
+    session_id = f"SESS-{id_usuario}-{int(timezone.now().timestamp())}"
+    return_url = request.build_absolute_uri('/pago/webpay/retorno/')
+
+    headers = {
+        'Tbk-Api-Key-Id': WEBPAY_COMMERCE_CODE,
+        'Tbk-Api-Key-Secret': WEBPAY_API_KEY_SECRET,
+        'Content-Type': 'application/json'
+    }
+    payload = {
+        'buy_order': buy_order,
+        'session_id': session_id,
+        'amount': monto,
+        'return_url': return_url
+    }
+
+    try:
+        resp = requests.post(WEBPAY_URL_CREAR, json=payload, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            return render(request, 'vistas/webpay_redirect.html', {
+                'url': data.get('url'),
+                'token': data.get('token')
+            })
+        else:
+            messages.error(request, f"Error al iniciar Webpay Plus: {resp.text}")
+            return redirect('pago_transferencia')
+    except Exception as e:
+        messages.error(request, f"Error de conexión con Transbank Webpay: {e}")
+        return redirect('pago_transferencia')
+
+
+def retorno_pago_webpay(request):
+    token_ws = request.GET.get('token_ws') or request.POST.get('token_ws')
+    tbk_token = request.GET.get('TBK_TOKEN') or request.POST.get('TBK_TOKEN')
+
+    if tbk_token and not token_ws:
+        messages.warning(request, "⚠️ Pago en Webpay Plus cancelado por el usuario.")
+        return redirect('pago_transferencia')
+
+    if not token_ws:
+        messages.error(request, "❌ No se recibió token de transacción válido.")
+        return redirect('pago_transferencia')
+
+    headers = {
+        'Tbk-Api-Key-Id': WEBPAY_COMMERCE_CODE,
+        'Tbk-Api-Key-Secret': WEBPAY_API_KEY_SECRET,
+        'Content-Type': 'application/json'
+    }
+
+    try:
+        commit_url = f"{WEBPAY_URL_CREAR}/{token_ws}"
+        resp = requests.put(commit_url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get('response_code') == 0:  # Aprobado
+                buy_order = data.get('buy_order', '')
+                amount = data.get('amount', 0)
+                auth_code = data.get('authorization_code', 'N/A')
+                card_last4 = data.get('card_detail', {}).get('card_number', '****')
+
+                parts = buy_order.split('-')
+                id_reserva = int(parts[1]) if len(parts) >= 2 and parts[1].isdigit() else None
+
+                reserva = None
+                if id_reserva:
+                    reserva = Reserva.objects.filter(id_reserva=id_reserva).first()
+                if not reserva:
+                    id_usuario = request.session.get('usuario_id')
+                    reserva = Reserva.objects.filter(usuario_id=id_usuario).order_by('id_reserva').last()
+
+                if reserva:
+                    reserva.estado = 'Confirmada'
+                    reserva.save()
+
+                    Pago.objects.create(
+                        id_reserva=reserva.id_reserva,
+                        monto=amount,
+                        metodo_pago='Webpay Plus',
+                        id_metodo_pago=2,  # Webpay / Tarjeta Débito-Crédito
+                        id_estado_pago=2,  # Aprobado
+                        observaciones=f"Webpay Aut: {auth_code} | Tarjeta: ****{card_last4}"
+                    )
+
+                    # Registrar notificación automática de WhatsApp
+                    try:
+                        clean_tel = '+569' + str(reserva.usuario.id_usuario).zfill(8)
+                        with connection.cursor() as cursor:
+                            cursor.execute("""
+                                INSERT INTO historial_mensajes_whatsapp (telefono_destino, id_reserva, mensaje)
+                                VALUES (%s, %s, %s)
+                            """, [
+                                clean_tel,
+                                reserva.id_reserva,
+                                f"¡Hola {reserva.usuario.nombre}! Tu pago de ${amount} con Webpay Plus fue aprobado (Cod Aut: {auth_code}). Tu reserva #{reserva.id_reserva} en {reserva.cabana.nombre} está Confirmada."
+                            ])
+                    except Exception as e:
+                        print("Error logging whatsapp notification:", e)
+
+                    return render(request, 'vistas/webpay_voucher.html', {
+                        'reserva': reserva,
+                        'buy_order': buy_order,
+                        'auth_code': auth_code,
+                        'card_last4': card_last4,
+                        'amount': amount
+                    })
+            else:
+                messages.error(request, f"❌ Transacción rechazada por el banco emisor (Código: {data.get('response_code')}).")
+                return redirect('pago_transferencia')
+        else:
+            messages.error(request, f"❌ Error de confirmación con Webpay: {resp.text}")
+            return redirect('pago_transferencia')
+    except Exception as e:
+        messages.error(request, f"❌ Error de comunicación con Webpay Plus: {e}")
+        return redirect('pago_transferencia')
+
+
 # Contacto público
 def contacto_view(request):
     nombre = request.session.get('usuario_nombre', '')

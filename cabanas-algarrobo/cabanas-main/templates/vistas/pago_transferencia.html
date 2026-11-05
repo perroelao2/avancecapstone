@@ -32,23 +32,45 @@
     </div>
   </header>
 
-  <main class="login-container">
-    <h2>Datos para la Transferencia</h2>
-    <p><strong>Banco:</strong> BancoEstado</p>
-    <p><strong>Cuenta:</strong> 123456789</p>
-    <p><strong>Tipo de cuenta:</strong> Cuenta Rut</p>
-    <p><strong>Nombre:</strong> Juan Pérez</p>
-    <p><strong>RUT:</strong> 12.345.678-9</p>
-    <p><strong>Correo:</strong> contacto@cabanasalgarrobo.cl</p>
-    <p><strong>Asunto:</strong> Pago Reserva</p>
-    <p><strong>Monto:</strong> 50000</p>
-    <p> Una vez realizada la transferencia, tu reserva quedará pendiente de confirmación por un administrador.</p>
-    <p>Recuerda enviar el comprobante de la transferencia al correo indicado.</p>
-    <br>
-    <form method="POST" class="login-form">
-      {% csrf_token %}
-      <button type="submit">He realizado la transferencia</button>
-    </form>
+  <main class="login-container" style="max-width: 650px;">
+    <h2>Métodos de Pago Disponibles</h2>
+    <p>Selecciona cómo deseas abonar tu reserva en Cabañas Algarrobo:</p>
+
+    <!-- Opción 1: Webpay Plus -->
+    <div style="background: #e8f4fd; border: 2px solid #004B87; border-radius: 10px; padding: 22px; margin-bottom: 25px; text-align: left;">
+      <h3 style="color: #004B87; margin-top: 0; display: flex; align-items: center; justify-content: space-between;">
+        <span>💳 Pago en Línea (Webpay Plus)</span>
+        <span style="font-size: 12px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 12px;">Confirmación Inmediata</span>
+      </h3>
+      <p style="color: #334155; font-size: 14px; margin-bottom: 12px;">
+        Paga de forma rápida y 100% segura con tus tarjetas de <strong>Débito, Crédito o Prepago</strong> a través de la pasarela oficial de Transbank.
+      </p>
+      {% if reserva %}
+      <p style="font-size: 15px; margin-bottom: 15px;">
+        <strong>Reserva #{{ reserva.id_reserva }}:</strong> {{ reserva.cabana.nombre }} ({{ reserva.fecha_inicio }} al {{ reserva.fecha_fin }})<br>
+        <strong>Monto a pagar:</strong> ${{ reserva.cabana.precio_por_noche|default:50000 }}
+      </p>
+      {% endif %}
+      <a href="{% url 'iniciar_pago_webpay' %}" style="display: block; text-align: center; background-color: #f75500; color: white; padding: 12px 20px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 16px;">
+        Pagar con Webpay Plus 🔒
+      </a>
+    </div>
+
+    <!-- Opción 2: Transferencia -->
+    <div style="background: #fdfdfd; border: 1px solid #cbd5e1; border-radius: 10px; padding: 22px; text-align: left;">
+      <h3 style="margin-top: 0; color: #334155;">🏦 Transferencia Bancaria Manual</h3>
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 10px;">Requiere validación manual por parte del equipo de administración.</p>
+      <div style="font-size: 14px; line-height: 1.6; color: #1e293b;">
+        <p><strong>Banco:</strong> BancoEstado | <strong>Tipo:</strong> Cuenta Rut</p>
+        <p><strong>Número de Cuenta:</strong> 123456789 | <strong>RUT:</strong> 12.345.678-9</p>
+        <p><strong>Nombre:</strong> Cabañas Algarrobo | <strong>Correo:</strong> contacto@cabanasalgarrobo.cl</p>
+      </div>
+      <br>
+      <form method="POST" class="login-form">
+        {% csrf_token %}
+        <button type="submit" style="background-color: #475569;">Reportar Pago por Transferencia</button>
+      </form>
+    </div>
   </main>
 
   <footer class="footer-login">

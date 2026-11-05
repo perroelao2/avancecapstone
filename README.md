@@ -3,8 +3,8 @@
 Este repositorio contiene la solución tecnológica integral para **Cabañas Algarrobo Connect**, compuesta por una arquitectura desacoplada y sincronizada a través de una base de datos relacional centralizada:
 
 1. 🖥️ **Aplicación de Escritorio (Administración):** Construida con **Electron** y **Node.js** para la gestión operativa, inventario, confirmación de pagos, bloqueos de fechas y reportes del personal administrativo.
-2. 🌐 **Plataforma Web (Portal de Clientes):** Desarrollada en **Django 5.2** para que los huéspedes puedan explorar cabañas con precios por noche, reservar online, registrar pagos por transferencia y calificar su experiencia con estrellas.
-3. ⚡ **Microservicio de Autenticación (API):** Desarrollado en **FastAPI**, **SQLAlchemy** y **bcrypt** para el registro seguro, hashing y validación de usuarios.
+2. 🌐 **Plataforma Web (Portal de Clientes):** Desarrollada en **Django 5.2** para que los huéspedes puedan explorar cabañas con precios por noche, reservar en línea, pagar con tarjeta mediante Webpay Plus o registrar comprobantes de transferencia y calificar su experiencia con estrellas.
+3. ⚡ **Microservicio de Autenticación (API):** Desarrollado en **FastAPI**, **SQLAlchemy** y **bcrypt** para el registro seguro, hashing matemático y validación de credenciales.
 4. 🗄️ **Base de Datos Centralizada:** **MySQL / MariaDB** (`algarrobo_connect`) en el puerto estándar `3306`, compartida por todos los frentes.
 
 ---
@@ -36,10 +36,82 @@ Este repositorio contiene la solución tecnológica integral para **Cabañas Alg
                                              └────────────────────────────┘
 ```
 
-* **Principio rector:** La Base de Datos es la fuente única de verdad para el sistema.
+* **Fuente única de verdad:** La base de datos centraliza toda la persistencia de transacciones, inventarios, reservas y estados de pago.
 * **Separación de responsabilidades:**
-  * Las tareas administrativas (aprobar reservas, cambiar estados de pago, gestionar inventario, bloquear fechas por mantención, reportes CSV) se realizan exclusivamente desde la **App de Escritorio**.
-  * La **Web** está optimizada para la interacción del cliente (catálogo, reservas, pagos y comentarios).
+  * Las tareas administrativas (aprobar reservas, validar comprobantes de pago, registrar movimientos de inventario, bloquear fechas por mantenimiento y exportar reportes) se ejecutan exclusivamente desde la **App de Escritorio**.
+  * La **Plataforma Web** se orienta a la experiencia del huésped (catálogo dinámico, cálculo de rutas, consulta climática, pagos en línea y reseñas).
+
+---
+
+## 🌐 Catálogo y Funcionamiento de las 6 APIs Integradas
+
+La plataforma integra 6 APIs complementarias que enriquecen los servicios al cliente, la seguridad del sistema y la operativa del negocio:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   APIs DEL SISTEMA                                     │
+├──────────────────────────┬─────────────────────────────────┬───────────────────────────┤
+│ 1. OpenStreetMap         │ Cartografía y mapas interactivos│ Mapas georreferenciados   │
+│ 2. Open-Meteo            │ Clima y pronóstico en tiempo real│ Meteorología en balneario │
+│ 3. FastAPI Usuarios      │ Autenticación y cifrado Bcrypt  │ Seguridad e identidades   │
+│ 4. OSRM Routing Machine  │ Rutas viales, distancias y km   │ Cálculo de viaje en ruta  │
+│ 5. Transbank Webpay Plus │ Pasarela de pagos con tarjeta   │ Cobro digital bancario    │
+│ 6. WhatsApp Cloud/Gateway│ Notificaciones automáticas      │ Mensajería instantánea    │
+└──────────────────────────┴─────────────────────────────────┴───────────────────────────┘
+```
+
+### 1. API de Cartografía y Georreferenciación (OpenStreetMap & Leaflet)
+* **Proveedor:** OpenStreetMap Foundation / Tile Server REST.
+* **Objetivo en el negocio:** Desplegar la ubicación geográfica exacta de las cabañas en Algarrobo, permitiendo a los turistas ubicar visualmente el recinto frente a la costa.
+* **Tecnología e Integración:** Cliente JavaScript mediante la librería **Leaflet**, consumiendo mosaicos vectoriales y ráster vía solicitudes HTTPS a `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`.
+* **Flujo de datos:** El navegador solicita los azulejos cartográficos de las coordenadas de Algarrobo (`[-33.3667, -71.6667]`) y renderiza marcadores personalizados con ventanas emergentes interactivas de cada cabaña disponible.
+
+### 2. API Meteorológica y Pronóstico del Tiempo (Open-Meteo / OpenWeather)
+* **Proveedor:** Open-Meteo REST API.
+* **Objetivo en el negocio:** Informar a los futuros huéspedes sobre el clima en tiempo real, temperatura actual, velocidad del viento y estado meteorológico en Algarrobo antes de su estadía.
+* **Tecnología e Integración:** Peticiones asíncronas GET a `https://api.open-meteo.com/v1/forecast?latitude=-33.3667&longitude=-71.6667&current_weather=true`.
+* **Flujo de datos:** La plataforma consulta el servicio sin requerir claves API privadas ni cuotas restrictivas, interpreta la respuesta JSON (`temperature`, `windspeed`, `weathercode`) y proyecta dinámicamente un banner meteorológico adaptado con iconografía SVG.
+
+### 3. API REST de Autenticación y Cifrado (Microservicio FastAPI + Bcrypt)
+* **Proveedor:** Servicio interno desacoplado desarrollado con FastAPI, SQLAlchemy y Python `bcrypt`.
+* **Objetivo en el negocio:** Aislar la capa de identidad y credenciales de los usuarios, gestionando altas de cuenta e inicios de sesión bajo estándares criptográficos modernos.
+* **Tecnología e Integración:** Endpoints HTTP RESTful JSON (`/usuarios/login` y `/usuarios/registro`) expuestos en el puerto `8001`.
+* **Flujo de datos:**
+  1. Durante el registro, la API aplica un algoritmo de hash unidireccional con sal aleatoria (`bcrypt.hashpw(pass, gensalt(rounds=10))`) antes de escribir en la base de datos.
+  2. En el login, la API valida el texto ingresado contra el hash almacenado mediante `bcrypt.checkpw`, retornando un objeto JSON de sesión sin exponer jamás la contraseña ni el hash al cliente.
+
+### 4. API Vial de Rutas, Distancias y Tiempos (OSRM - Open Source Routing Machine)
+* **Proveedor:** Project OSRM Routing Engine REST API.
+* **Objetivo en el negocio:** Calcular la distancia exacta en kilómetros y el tiempo estimado de viaje en automóvil y transporte público desde el punto de origen del visitante (detectado por GPS o con origen en Santiago) hasta el complejo de cabañas.
+* **Tecnología e Integración:** Endpoint REST:
+  `https://router.project-osrm.org/route/v1/driving/{lon_origen},{lat_origen};{lon_destino},{lat_destino}?overview=full&geometries=geojson`
+* **Flujo de datos:**
+  1. El portal obtiene las coordenadas del usuario vía la API de Geolocalización HTML5 del navegador o toma las coordenadas predeterminadas de Santiago Centro (`-70.6506, -33.4372`).
+  2. Envía las coordenadas a OSRM, el cual procesa la red vial chilena y retorna la geometría de la ruta en formato GeoJSON, la distancia en metros y la duración en segundos.
+  3. La plataforma dibuja la polilínea azul de navegación directamente sobre el mapa interactivo y presenta un desglose visual con la distancia total en km y el tiempo proyectado.
+
+### 5. API de Pasarela de Pagos Digitales (Transbank Webpay Plus REST Sandbox)
+* **Proveedor:** Transbank S.A. (API REST Oficial Webpay Plus v1.2).
+* **Objetivo en el negocio:** Brindar a los clientes la posibilidad de abonar sus reservas al instante utilizando tarjetas de crédito, débito o prepago con confirmación bancaria automática.
+* **Tecnología e Integración:** Consumo de la API REST mediante la librería `requests` de Python contra el ambiente de integración Transbank:
+  * Código de Comercio: `597055555532`
+  * Endpoint de Creación: `https://webpay3gint.transbank.cl/rswebpaytransaction/api/webpay/v1.2/transactions`
+  * Endpoint de Confirmación: `.../transactions/{token}`
+* **Flujo de datos:**
+  1. El cliente pulsa "Pagar con Webpay Plus"; el backend de Django genera una orden de compra única y solicita un token a Transbank enviando las cabeceras `Tbk-Api-Key-Id` y `Tbk-Api-Key-Secret`.
+  2. La vista redirige al cliente a la pasarela bancaria oficial de Transbank mediante un formulario POST automático.
+  3. Tras la autorización en Transbank, el flujo retorna a `/pago/webpay/retorno/`, donde el backend confirma la transacción (método `PUT`), actualiza el pago a estado *Aprobado* (`id_estado_pago = 2`), confirma la reserva (`estado = 'Confirmada'`) y genera el comprobante digital bancario con código de autorización y últimos dígitos de la tarjeta.
+
+### 6. API de Mensajería y Notificaciones (WhatsApp Cloud / Gateway Directo)
+* **Proveedor:** Meta WhatsApp API / Gateway Web Directo (`api.whatsapp.com/send`).
+* **Objetivo en el negocio:** Notificar al cliente y al administrador acerca de la creación o pago exitoso de una reserva, además de permitir la comunicación directa con el huésped desde la aplicación de escritorio.
+* **Tecnología e Integración:** 
+  * Generación y envío mediante el esquema estandarizado de WhatsApp API:
+    `https://api.whatsapp.com/send?phone={telefono_limpio}&text={mensaje_url_encoded}`
+  * Registro y trazabilidad centralizada en la tabla `historial_mensajes_whatsapp` de la base de datos.
+* **Flujo de datos:**
+  1. Al confirmarse un pago o registrarse un evento relevante en Django o Electron, el sistema genera la plantilla de notificación y la persiste en el historial.
+  2. El personal administrativo cuenta en la aplicación de escritorio con un panel dedicado de comunicaciones para enviar mensajes directos con un clic mediante el protocolo de WhatsApp.
 
 ---
 
@@ -48,76 +120,77 @@ Este repositorio contiene la solución tecnológica integral para **Cabañas Alg
 ```text
 avancecapstone/
 ├── BD/
-│   └── cabanas algarrobo.sql       # Script SQL maestro con estructura y datos semilla
+│   └── cabanas algarrobo.sql       # Script SQL maestro con estructura relacional y datos semilla
 ├── Mockups/                        # Diseños visuales de referencia de la app de escritorio
 ├── src/
-│   ├── index.html                  # Interfaz gráfica de la app de escritorio
-│   ├── styles.css                  # Estilos visuales de la app de escritorio
-│   └── renderer.js                 # Lógica visual e invocación de eventos IPC
+│   ├── index.html                  # Interfaz gráfica de la app de escritorio (Electron)
+│   ├── styles.css                  # Hoja de estilos con variables de diseño institucional
+│   └── renderer.js                 # Lógica cliente, reactividad y eventos IPC
 ├── cabanas-algarrobo/              # Módulos Web y API (Python)
-│   ├── cabanas-main/               # Proyecto Django (Portal de clientes)
-│   │   ├── app/                    # Modelos, vistas y lógica cliente
-│   │   ├── cabanas/                # Configuración, URLs y WSGI
-│   │   ├── static/                 # CSS, imágenes y JS públicos
-│   │   ├── templates/              # Plantillas HTML (vistas del cliente)
-│   │   └── manage.py
-│   ├── usuaruios_api/              # Microservicio FastAPI de autenticación
-│   │   ├── main.py                 # Endpoints (/usuarios/login, /usuarios/registro)
-│   │   ├── crud.py                 # Lógica con hashing seguro bcrypt
-│   │   ├── database.py             # Conexión SQLAlchemy a MySQL
-│   │   ├── models.py               # Modelo de Usuario
-│   │   └── schemas.py              # Esquemas Pydantic
-│   └── requirements.txt            # Dependencias Python
-├── db.js                           # Configuración del Pool de conexiones MySQL en Node.js
-├── main.js                         # Proceso principal de Electron y controladores IPC
-├── preload.js                      # Puente seguro IPC entre frontend y backend de Electron
-├── start-db.bat                    # Script para iniciar MySQL / MariaDB en Windows
-├── start-db.sh                     # Script para iniciar MariaDB local en Linux
-├── test-db.js                      # Test rápido de conectividad a la BD desde Node
-├── package.json                    # Dependencias y scripts de Node.js / Electron
-└── .gitignore                      # Exclusión de venv, node_modules y temporales
+│   ├── cabanas-main/               # Proyecto Django (Portal del huésped)
+│   │   ├── app/                    # Vistas, modelos ORM y controladores de negocio
+│   │   ├── cabanas/                # Configuración global, enrutamiento y WSGI
+│   │   ├── static/                 # Hojas de estilo, assets e iconografía
+│   │   ├── templates/              # Plantillas HTML con motor de templates Django
+│   │   └── manage.py               # Punto de entrada de comandos Django
+│   ├── usuaruios_api/              # Microservicio FastAPI de gestión de identidades
+│   │   ├── main.py                 # Enrutamiento de endpoints REST
+│   │   ├── crud.py                 # Lógica de persistencia y hashing Bcrypt
+│   │   ├── database.py             # Conexión SQLAlchemy a la base de datos MySQL
+│   │   ├── models.py               # Modelo declarativo de la entidad Usuario
+│   │   └── schemas.py              # Validación tipada con esquemas Pydantic
+│   └── requirements.txt            # Manifiesto de dependencias de Python
+├── db.js                           # Configuración del Connection Pool de MySQL en Node.js
+├── main.js                         # Proceso principal de Electron, controladores IPC y sincronización
+├── preload.js                      # Context Bridge seguro para la comunicación IPC
+├── start-db.bat                    # Script para inicio asistido de base de datos en Windows
+├── start-db.sh                     # Script para inicio asistido de base de datos en Linux
+├── test-db.js                      # Script de verificación de conexión relacional desde Node.js
+├── package.json                    # Manifiesto de dependencias y scripts de Node.js / Electron
+└── .gitignore                      # Exclusiones de entornos virtuales y dependencias
 ```
 
 ---
 
 ## 🔑 Credenciales de Acceso
 
-| Rol | Correo | Contraseña | Plataforma Recomendada |
+| Perfil | Correo Electrónico | Contraseña | Entorno Destinado |
 | :--- | :--- | :--- | :--- |
 | **Administrador** | `admin@algarroboconnect.cl` | `admin123` | **App de Escritorio (Electron)** |
-| **Cliente de Prueba 1** | `carlos.munoz@gmail.com` | `cliente123` | **Plataforma Web (Django)** |
-| **Cliente de Prueba 2** | `camila.soto@gmail.com` | `cliente123` | **Plataforma Web (Django)** |
+| **Cliente Demostración 1** | `carlos.munoz@gmail.com` | `cliente123` | **Plataforma Web (Django)** |
+| **Cliente Demostración 2** | `camila.soto@gmail.com` | `cliente123` | **Plataforma Web (Django)** |
 
-> 💡 Los clientes también pueden registrar cuentas nuevas directamente desde el botón **"Crear Cuenta"** en la web.
+> El registro de nuevos clientes se encuentra habilitado en el formulario web a través del botón **"Crear Cuenta"**.
 
 ---
 
 ## 🪟 Guía de Instalación y Despliegue en Windows
 
 ### 1. Requisitos Previos en Windows
-* **Node.js** (versión 18 LTS o superior): [Descargar Node.js](https://nodejs.org/)
-* **Python** (versión 3.11, 3.12 o 3.13): [Descargar Python](https://www.python.org/) *(Asegúrate de marcar la casilla "Add Python to PATH")*.
-* **MySQL Server** o **XAMPP / WampServer** con MySQL corriendo en el puerto `3306`.
-* **Git**: [Descargar Git](https://git-scm.com/)
+* **Node.js** (versión 18 LTS o superior): [Sitio Oficial Node.js](https://nodejs.org/)
+* **Python** (versión 3.11, 3.12 o 3.13): [Sitio Oficial Python](https://www.python.org/) *(Es obligatorio marcar la opción "Add Python to PATH" durante la instalación)*.
+* **MySQL Server** o **XAMPP / WampServer** con servicio MySQL activo en el puerto `3306`.
+* **Git**: [Sitio Oficial Git](https://git-scm.com/)
 
 ---
 
 ### 2. Configurar e Iniciar la Base de Datos en Windows
-1. Inicia el motor MySQL mediante cualquiera de las siguientes opciones:
-   * **Opción A (XAMPP):** Abre el **XAMPP Control Panel** y haz clic en **Start** en el módulo MySQL.
-   * **Opción B (Servicio de Windows):** Abre PowerShell o CMD como Administrador y ejecuta: `net start MySQL` (o `net start MariaDB`).
-   * **Opción C (Script asistido):** Haz doble clic en el archivo `start-db.bat` incluido en la raíz del repositorio.
-2. Abre tu gestor preferido (phpMyAdmin, MySQL Workbench o consola) y crea la base de datos:
+1. Iniciar el motor de base de datos según el entorno disponible:
+   * **Con XAMPP:** Abrir el panel de control y activar el módulo **MySQL**.
+   * **Con Servicio de Windows:** Ejecutar en PowerShell o CMD con privilegios de Administrador:
+     ```powershell
+     net start MySQL
+     ```
+   * **Con Script asistido:** Ejecutar el archivo `start-db.bat` ubicado en la raíz del repositorio.
+2. Crear la base de datos relacional mediante la consola o gestor visual (Workbench / phpMyAdmin):
    ```sql
    CREATE DATABASE IF NOT EXISTS algarrobo_connect CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-3. Importa el archivo SQL maestro ubicado en `BD/cabanas algarrobo.sql`:
-   * Desde PowerShell / CMD:
-     ```powershell
-     mysql -u root -p algarrobo_connect < "BD/cabanas algarrobo.sql"
-     ```
-   * *(O importa el archivo directamente usando la pestaña "Importar" de phpMyAdmin o Workbench)*.
-4. Verifica que la conexión sea exitosa ejecutando:
+3. Importar el archivo SQL maestro ubicado en `BD/cabanas algarrobo.sql`:
+   ```powershell
+   mysql -u root -p algarrobo_connect < "BD\cabanas algarrobo.sql"
+   ```
+4. Comprobar la conexión desde Node.js:
    ```powershell
    node test-db.js
    ```
@@ -125,23 +198,20 @@ avancecapstone/
 ---
 
 ### 3. Configurar y Ejecutar la App de Escritorio (Electron)
-Abre una terminal en la raíz del proyecto (`avancecapstone/`):
+Desde una terminal situada en la raíz del repositorio (`avancecapstone/`):
 
 ```powershell
 # 1. Instalar dependencias de Node.js
 npm install
 
-# 2. (Opcional) Probar la conexión a MySQL
-node test-db.js
-
-# 3. Iniciar la aplicación de escritorio
+# 2. Iniciar la aplicación de escritorio
 npm start
 ```
 
 ---
 
-### 4. Configurar y Ejecutar la API de Autenticación (FastAPI)
-Abre una **segunda terminal** en `cabanas-algarrobo/`:
+### 4. Configurar y Levantar el Microservicio de Autenticación (FastAPI)
+Desde una segunda terminal en la carpeta `cabanas-algarrobo/`:
 
 ```powershell
 cd cabanas-algarrobo
@@ -155,58 +225,56 @@ python -m venv venv
 # 3. Instalar las dependencias de Python
 pip install -r requirements.txt
 
-# 4. Iniciar el microservicio FastAPI en el puerto 8001
+# 4. Iniciar el servidor Uvicorn en el puerto 8001
 cd usuaruios_api
 uvicorn main:app --host 127.0.0.1 --port 8001 --reload
 ```
-*API disponible en:* `http://127.0.0.1:8001/docs`
+*Documentación interactiva Swagger disponible en:* `http://127.0.0.1:8001/docs`
 
 ---
 
 ### 5. Ejecutar la Plataforma Web (Django)
-Abre una **tercera terminal** en `cabanas-algarrobo/cabanas-main/`:
+Desde una tercera terminal en la carpeta `cabanas-algarrobo\cabanas-main\`:
 
 ```powershell
 cd cabanas-algarrobo\cabanas-main
 
-# Activar el mismo entorno virtual
+# 1. Activar el entorno virtual
 ..\venv\Scripts\activate
 
-# Aplicar migraciones iniciales de sesiones y auth de Django
+# 2. Ejecutar las migraciones de Django
 python manage.py migrate
 
-# Iniciar el servidor web en el puerto 8000
+# 3. Iniciar el servidor de desarrollo en el puerto 8000
 python manage.py runserver 127.0.0.1:8000
 ```
-*Sitio web disponible en:* `http://127.0.0.1:8000/`
+*Portal web disponible en:* `http://127.0.0.1:8000/`
 
 ---
 
 ## 🐧 Guía de Instalación y Despliegue en Linux
 
-A continuación encontrarás los comandos de instalación según tu distribución de Linux (**Ubuntu/Debian**, **Arch Linux** o **Fedora**).
+Instrucciones de despliegue según la distribución utilizada (**Arch Linux**, **Ubuntu/Debian** o **Fedora**).
 
 ---
 
-### 1. Instalación de Paquetes del Sistema por Distribución
+### 1. Instalación de Paquetes Base por Distribución
 
-#### 🏹 Opción A: Arch Linux / Manjaro / EndeavourOS
-En Arch Linux, `pacman` instala los paquetes oficiales y es necesario inicializar el directorio de datos de MariaDB antes de iniciar el servicio:
-
+#### 🏹 Arch Linux / Manjaro / EndeavourOS
 ```bash
-# 1. Actualizar repositorios e instalar paquetes base
+# 1. Instalar paquetes oficiales con pacman
 sudo pacman -Syu nodejs npm python python-pip mariadb git
 
-# 2. Inicializar el directorio de datos de MariaDB (requerido en Arch Linux)
+# 2. Inicializar el directorio de datos de MariaDB (paso mandatorio en Arch Linux)
 sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
 
-# 3. Iniciar y habilitar el servicio de MariaDB
+# 3. Iniciar y habilitar el servicio del motor relacional
 sudo systemctl enable --now mariadb
 ```
 
-#### 🔵 Opción B: Ubuntu / Debian / Linux Mint / WSL
+#### 🔵 Ubuntu / Debian / Linux Mint / WSL
 ```bash
-# 1. Actualizar repositorios e instalar dependencias
+# 1. Actualizar repositorios e instalar paquetes
 sudo apt update
 sudo apt install -y nodejs npm python3 python3-venv python3-pip mariadb-server git
 
@@ -214,9 +282,9 @@ sudo apt install -y nodejs npm python3 python3-venv python3-pip mariadb-server g
 sudo systemctl enable --now mariadb
 ```
 
-#### 🎩 Opción C: Fedora / RHEL / Rocky Linux
+#### 🎩 Fedora / RHEL / Rocky Linux
 ```bash
-# 1. Instalar dependencias con DNF
+# 1. Instalar dependencias mediante DNF
 sudo dnf install -y nodejs npm python3 python3-pip mariadb-server git
 
 # 2. Iniciar y habilitar el servicio de MariaDB
@@ -225,32 +293,32 @@ sudo systemctl enable --now mariadb
 
 ---
 
-### 2. Configurar la Base de Datos
-Una vez que el servicio de MariaDB esté corriendo:
+### 2. Creación e Importación de la Base de Datos
+Con el motor relacional en ejecución:
 
 ```bash
-# 1. Crear la base de datos
+# 1. Crear el esquema relacional
 sudo mariadb -e "CREATE DATABASE IF NOT EXISTS algarrobo_connect CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# 2. Importar el script SQL maestro
+# 2. Importar la estructura y datos iniciales
 sudo mariadb algarrobo_connect < "BD/cabanas algarrobo.sql"
 ```
 
-*(Si usas usuario `root` con contraseña en tu entorno local, añade `-u root -p` en los comandos).*
+*(En instalaciones configuradas con contraseña para el usuario root, se debe anexar el argumento `-u root -p`).*
 
 ---
 
-### 3. Configurar y Ejecutar la App de Escritorio (Electron)
+### 3. Ejecutar la App de Escritorio (Electron)
 Desde la raíz del repositorio (`avancecapstone/`):
 
 ```bash
-# 1. Instalar dependencias de Node.js
+# 1. Instalar paquetes de Node.js
 npm install
 
-# 2. (Opcional) Verificar la conexión a la base de datos
+# 2. Comprobar conectividad con la base de datos
 node test-db.js
 
-# 3. Iniciar la aplicación de escritorio
+# 3. Iniciar el proceso de Electron
 npm start
 ```
 
@@ -258,26 +326,22 @@ npm start
 
 ### 4. Configurar Entorno Python y Levantar Servicios Web (FastAPI y Django)
 
-Abre otra terminal o corre los procesos:
-
 ```bash
 cd cabanas-algarrobo
 
-# 1. Crear el entorno virtual de Python
+# 1. Crear y activar el entorno virtual
 python3 -m venv venv
-
-# 2. Activar el entorno virtual
 source venv/bin/activate
 
-# 3. Instalar dependencias de Python
+# 2. Instalar el conjunto de dependencias requeridas
 pip install -r requirements.txt
 
-# 4. Levantar Microservicio FastAPI (Terminal 1)
+# 3. Levantar el Microservicio FastAPI (Terminal 1)
 cd usuaruios_api
 uvicorn main:app --host 127.0.0.1 --port 8001
 
-# 5. Levantar Plataforma Web Django (Terminal 2)
-# (Abre una nueva terminal, activa el venv con source cabanas-algarrobo/venv/bin/activate)
+# 4. Levantar la Plataforma Web Django (Terminal 2)
+# En una terminal adicional con el entorno virtual activo:
 cd cabanas-algarrobo/cabanas-main
 python manage.py migrate
 python manage.py runserver 127.0.0.1:8000
@@ -285,27 +349,15 @@ python manage.py runserver 127.0.0.1:8000
 
 ---
 
-## 🔄 Resumen de Ajustes e Integraciones Realizadas
+## 🔒 Mecanismos de Seguridad y Sincronización
 
-1. **Gestión de Cabañas y Precios:**
-   - Adición de la columna `precio_por_noche` a la tabla `cabanas`.
-   - Visualización del valor por noche en el catálogo web público de cabañas.
-   - Cálculo automático del monto a pagar según la cantidad de noches seleccionadas por el cliente.
-2. **Estados y Métodos de Pago:**
-   - Sincronización del modelo `Pago` con las tablas relacionales `estados_pago` y `metodos_pago`.
-   - Los pagos por transferencia inician con `id_estado_pago = 1` (*Pendiente Revisión*).
-   - Los administradores aprueban o rechazan el pago desde la App de Escritorio (`id_estado_pago = 2`, *Aprobado*).
-3. **Calificaciones con Estrellas:**
-   - Creación de la columna `estrellas INT DEFAULT 5` en la tabla `comentarios`.
-   - Sistema de calificación interactivo (1 a 5 estrellas) plenamente operativo en el formulario web y visible en el listado de reseñas.
-4. **Desacoplamiento Limpio:**
-   - Eliminación total de rutas y plantillas administrativas en Django, centralizando el control y la seguridad operativa en la aplicación nativa de Electron.
-5. **Seguridad y Cifrado de Contraseñas (Bcrypt):**
-   - Implementación unificada del algoritmo **Bcrypt** (con salt rounds = 10) tanto en la App de Escritorio (`bcryptjs`) como en el Microservicio de Autenticación (`bcrypt` en Python).
-   - Al registrar cualquier usuario, la contraseña se hashea antes de almacenarse en MySQL (`$2b$10$...`), garantizando que **nunca se guarde en texto plano**.
-   - Al iniciar sesión, el sistema valida la contraseña ingresada contra el hash matemático mediante `bcrypt.compare`, sin exponer el hash al usuario.
-   - Migración transparente: si se ingresa con una cuenta antigua en texto plano, el sistema la autentica y actualiza automáticamente su registro en la BD a un hash Bcrypt.
-6. **Sincronización Dinámica en Tiempo Real (App de Escritorio):**
-   - La aplicación de escritorio cuenta con un motor de sincronización automática en segundo plano (polling cada 3 segundos y evento de foco de ventana).
-   - Cualquier acción realizada desde la web (nuevo comentario, nueva reserva, comprobante de pago) se refleja de forma instantánea en la app de escritorio sin necesidad de recargar la aplicación ni utilizar botones manuales de actualización.
-   - Posee detección inteligente de formularios activos: si el administrador está escribiendo en un campo de texto, el refresco no sobreescribe sus entradas.
+1. **Cifrado Robusto de Contraseñas (Bcrypt):**
+   * El sistema incorpora el algoritmo criptográfico **Bcrypt** con un factor de trabajo (*cost factor*) de 10 iteraciones saladas, implementado tanto en el proceso de Electron (`bcryptjs`) como en la API de autenticación (`bcrypt` en Python).
+   * Al registrarse un usuario, la contraseña en texto plano es transformada inmediatamente en un hash de 60 caracteres (`$2b$10$...`) antes de su persistencia en la base de datos, imposibilitando el almacenamiento de claves legibles.
+   * La validación de credenciales se efectúa mediante comparación segura de funciones hash (`bcrypt.compare`), sin exponer ni transmitir las contraseñas originales.
+   * Cuenta con un mecanismo de actualización progresiva: si una cuenta histórica fue creada previamente sin hash, el sistema la autentica y actualiza automáticamente su registro al nuevo formato cifrado.
+
+2. **Sincronización Dinámica sin Recargas Manuales:**
+   * La aplicación de escritorio implementa un ciclo de sincronización periódica en segundo plano combinado con la detección de foco de ventana.
+   * Las interacciones generadas desde el portal web (nuevas reservas, pagos procesados por Webpay, comprobantes de transferencia y reseñas con estrellas) se reflejan de forma automática en los paneles del administrador sin requerir la intervención del usuario ni reinicios de la aplicación.
+   * El sistema detecta cuándo existen formularios en edición activa para prevenir que la actualización de datos interfiera con el texto que el operador se encuentre redactando.
