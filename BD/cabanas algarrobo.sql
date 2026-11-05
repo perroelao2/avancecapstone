@@ -338,9 +338,9 @@ VALUES
   (5, 'Estacionamiento Privado', 'car');
 INSERT INTO `usuarios` (`id_usuario`, `nombre`, `correo`, `contrasena`, `rol`, `id_rol`, `telefono`, `id_comuna`)
 VALUES
-  (1, 'Administrador Algarrobo', 'admin@algarroboconnect.cl', '$2y$10$hashpass123', 'admin', 1, '+56911112222', 1),
-  (2, 'Carlos Muñoz', 'carlos.munoz@gmail.com', '$2y$10$hashpass456', 'cliente', 3, '+56998765432', 3),
-  (3, 'Camila Soto', 'camila.soto@gmail.com', '$2y$10$hashpass789', 'cliente', 3, '+56987654321', 1);
+  (1, 'Administrador Algarrobo', 'admin@algarroboconnect.cl', '$2b$10$F1qkXdG6mp7Qw/wn3I11M.AXxHupIA.zENCFGlhl4wsoszyKKvlve', 'admin', 1, '+56911112222', 1),
+  (2, 'Carlos Muñoz', 'carlos.munoz@gmail.com', '$2b$10$LlW0J/KkQOElcHaa7GQTx.JDRPkFKCp/8w6MlniWxBiWECPz76P6y', 'cliente', 3, '+56998765432', 3),
+  (3, 'Camila Soto', 'camila.soto@gmail.com', '$2b$10$LlW0J/KkQOElcHaa7GQTx.JDRPkFKCp/8w6MlniWxBiWECPz76P6y', 'cliente', 3, '+56987654321', 1);
 INSERT INTO `cabanas` (`id_cabana`, `nombre`, `ubicacion`, `capacidad`, `estado`, `id_estado`, `id_comuna`, `id_sector`, `precio_por_noche`)
 VALUES
   (1, 'Cabaña El Canelo', 'Av. Alessandri 450, Algarrobo', 4, 'Disponible', 1, 1, 1, 55000),

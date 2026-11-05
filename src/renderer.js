@@ -41,20 +41,26 @@ function getPhotosTriple(fotosArr) {
 }
 
 // ======================== CARGA DE DATOS DESDE MYSQL ========================
-async function refreshAllData() {
-  catalogs = await window.api.invoke('catalogs:getAll');
-  cabanas = await window.api.invoke('cabanas:list');
-  reservas = await window.api.invoke('reservas:list');
-  inventario = await window.api.invoke('inventario:list');
-  comunicaciones = await window.api.invoke('comunicaciones:getAll');
+async function refreshAllData(onlyBackground = false) {
+  try {
+    catalogs = await window.api.invoke('catalogs:getAll');
+    cabanas = await window.api.invoke('cabanas:list');
+    reservas = await window.api.invoke('reservas:list');
+    inventario = await window.api.invoke('inventario:list');
+    comunicaciones = await window.api.invoke('comunicaciones:getAll');
 
-  populateStaticSelects();
-  renderInicioDashboard();
-  renderCabanasList();
-  renderReservasList();
-  renderReportesTable();
-  renderComunicaciones();
-  renderInventarioSection();
+    if (!onlyBackground) {
+      populateStaticSelects();
+    }
+    renderInicioDashboard();
+    renderCabanasList();
+    renderReservasList();
+    renderReportesTable();
+    renderComunicaciones();
+    renderInventarioSection();
+  } catch (err) {
+    console.warn('Auto-sync en segundo plano:', err.message);
+  }
 }
 
 function populateStaticSelects() {
@@ -700,6 +706,7 @@ function renderComunicaciones() {
         <div class="mini-list-item">
           <div>
             <strong>${cm.nombre}</strong> (${cm.correo}) — <span class="badge">${cm.cabana_nombre || 'General'}</span>
+            ${cm.estrellas ? `<span style="color:#d97706; margin-left:6px; font-weight:bold;">${'★'.repeat(cm.estrellas)}${'☆'.repeat(Math.max(0, 5 - cm.estrellas))}</span>` : ''}
             <div style="margin-top:4px; color:#223;">"${cm.comentario}"</div>
           </div>
           <button class="btn-pill btn-danger btn-sm" onclick="eliminarComentario(${cm.id})">Eliminar</button>
@@ -873,6 +880,28 @@ window.deletePromocion = async function(id_promocion) {
 // ======================== EVENTOS DOM ========================
 window.addEventListener('DOMContentLoaded', async () => {
   await refreshAllData();
+
+  // Sincronización dinámica automática en segundo plano (cada 3 segundos sin botón manual)
+  setInterval(async () => {
+    if (!currentUser) return;
+    const activeEl = document.activeElement;
+    const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+    if (!isTyping && !activeCabanaEdit && !activeReservaEdit) {
+      await refreshAllData(true);
+    } else {
+      try {
+        comunicaciones = await window.api.invoke('comunicaciones:getAll');
+        renderComunicaciones();
+      } catch (_) {}
+    }
+  }, 3000);
+
+  // Sincronización instantánea al recuperar foco en la ventana (ej: volver del navegador)
+  window.addEventListener('focus', async () => {
+    if (currentUser && !activeCabanaEdit && !activeReservaEdit) {
+      await refreshAllData(true);
+    }
+  });
 
   // Login submit
   document.getElementById('form-login').addEventListener('submit', async e => {

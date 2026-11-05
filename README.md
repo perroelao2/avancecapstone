@@ -71,6 +71,7 @@ avancecapstone/
 ├── db.js                           # Configuración del Pool de conexiones MySQL en Node.js
 ├── main.js                         # Proceso principal de Electron y controladores IPC
 ├── preload.js                      # Puente seguro IPC entre frontend y backend de Electron
+├── start-db.bat                    # Script para iniciar MySQL / MariaDB en Windows
 ├── start-db.sh                     # Script para iniciar MariaDB local en Linux
 ├── test-db.js                      # Test rápido de conectividad a la BD desde Node
 ├── package.json                    # Dependencias y scripts de Node.js / Electron
@@ -101,18 +102,25 @@ avancecapstone/
 
 ---
 
-### 2. Configurar la Base de Datos en Windows
-1. Inicia el servicio de MySQL desde el panel de XAMPP o desde los servicios de Windows.
-2. Abre tu terminal (PowerShell o CMD) o phpMyAdmin / MySQL Workbench y crea la base de datos:
+### 2. Configurar e Iniciar la Base de Datos en Windows
+1. Inicia el motor MySQL mediante cualquiera de las siguientes opciones:
+   * **Opción A (XAMPP):** Abre el **XAMPP Control Panel** y haz clic en **Start** en el módulo MySQL.
+   * **Opción B (Servicio de Windows):** Abre PowerShell o CMD como Administrador y ejecuta: `net start MySQL` (o `net start MariaDB`).
+   * **Opción C (Script asistido):** Haz doble clic en el archivo `start-db.bat` incluido en la raíz del repositorio.
+2. Abre tu gestor preferido (phpMyAdmin, MySQL Workbench o consola) y crea la base de datos:
    ```sql
    CREATE DATABASE IF NOT EXISTS algarrobo_connect CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 3. Importa el archivo SQL maestro ubicado en `BD/cabanas algarrobo.sql`:
-   * Desde consola:
+   * Desde PowerShell / CMD:
      ```powershell
      mysql -u root -p algarrobo_connect < "BD/cabanas algarrobo.sql"
      ```
    * *(O importa el archivo directamente usando la pestaña "Importar" de phpMyAdmin o Workbench)*.
+4. Verifica que la conexión sea exitosa ejecutando:
+   ```powershell
+   node test-db.js
+   ```
 
 ---
 
@@ -292,3 +300,12 @@ python manage.py runserver 127.0.0.1:8000
    - Sistema de calificación interactivo (1 a 5 estrellas) plenamente operativo en el formulario web y visible en el listado de reseñas.
 4. **Desacoplamiento Limpio:**
    - Eliminación total de rutas y plantillas administrativas en Django, centralizando el control y la seguridad operativa en la aplicación nativa de Electron.
+5. **Seguridad y Cifrado de Contraseñas (Bcrypt):**
+   - Implementación unificada del algoritmo **Bcrypt** (con salt rounds = 10) tanto en la App de Escritorio (`bcryptjs`) como en el Microservicio de Autenticación (`bcrypt` en Python).
+   - Al registrar cualquier usuario, la contraseña se hashea antes de almacenarse en MySQL (`$2b$10$...`), garantizando que **nunca se guarde en texto plano**.
+   - Al iniciar sesión, el sistema valida la contraseña ingresada contra el hash matemático mediante `bcrypt.compare`, sin exponer el hash al usuario.
+   - Migración transparente: si se ingresa con una cuenta antigua en texto plano, el sistema la autentica y actualiza automáticamente su registro en la BD a un hash Bcrypt.
+6. **Sincronización Dinámica en Tiempo Real (App de Escritorio):**
+   - La aplicación de escritorio cuenta con un motor de sincronización automática en segundo plano (polling cada 3 segundos y evento de foco de ventana).
+   - Cualquier acción realizada desde la web (nuevo comentario, nueva reserva, comprobante de pago) se refleja de forma instantánea en la app de escritorio sin necesidad de recargar la aplicación ni utilizar botones manuales de actualización.
+   - Posee detección inteligente de formularios activos: si el administrador está escribiendo en un campo de texto, el refresco no sobreescribe sus entradas.

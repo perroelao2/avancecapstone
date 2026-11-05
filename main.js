@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
+const bcrypt = require('bcryptjs');
 const { pool } = require('./db');
 
 app.disableHardwareAcceleration();
@@ -9,8 +10,13 @@ app.commandLine.appendSwitch('no-sandbox');
 
 
 function ensureDatabaseRunning() {
+  if (process.platform === 'win32') {
+    return;
+  }
   try {
-    execSync('bash ./start-db.sh', { cwd: __dirname, stdio: 'ignore' });
+    if (fs.existsSync(path.join(__dirname, 'start-db.sh'))) {
+      execSync('bash ./start-db.sh', { cwd: __dirname, stdio: 'ignore' });
+    }
   } catch (err) {
     console.warn('No se pudo ejecutar start-db.sh automáticamente:', err.message);
   }
@@ -63,14 +69,41 @@ ipcMain.handle('auth:login', async (_, { correo, contrasena }) => {
     return { ok: false, error: 'Correo no registrado en la base de datos.' };
   }
   const user = rows[0];
-  // Soportar contraseña directa, o contraseñas de prueba para los hashes del script SQL
-  const validPass =
-    user.contrasena === contrasena ||
-    (user.contrasena.startsWith('$2y$') && (contrasena === 'admin123' || contrasena === '123456' || contrasena === user.contrasena));
+
+  let validPass = false;
+
+  // Verificación segura con Bcrypt
+  if (user.contrasena && (user.contrasena.startsWith('$2a$') || user.contrasena.startsWith('$2b$') || user.contrasena.startsWith('$2y$'))) {
+    try {
+      validPass = await bcrypt.compare(contrasena, user.contrasena);
+    } catch (_) {
+      validPass = false;
+    }
+    // Soporte para los datos semilla iniciales que tenían los mockups antiguos
+    if (!validPass) {
+      if (user.contrasena === '$2y$10$hashpass123' && contrasena === 'admin123') validPass = true;
+      if (user.contrasena === '$2y$10$hashpass456' && contrasena === 'cliente123') validPass = true;
+      if (user.contrasena === '$2y$10$hashpass789' && contrasena === 'cliente123') validPass = true;
+    }
+  } else {
+    // Si la contraseña estaba guardada en texto plano (cuentas creadas anteriormente)
+    validPass = (user.contrasena === contrasena);
+  }
 
   if (!validPass) {
     return { ok: false, error: 'Correo o contraseña incorrectos.' };
   }
+
+  // Migración transparente: Si la contraseña estaba en texto plano o era un mock antiguo,
+  // la hasheamos automáticamente con Bcrypt en la base de datos
+  if (!user.contrasena || !user.contrasena.startsWith('$2b$')) {
+    try {
+      const newHash = await bcrypt.hash(contrasena, 10);
+      await pool.query('UPDATE usuarios SET contrasena = ? WHERE id_usuario = ?', [newHash, user.id_usuario]);
+      user.contrasena = newHash;
+    } catch (_) {}
+  }
+
   return { ok: true, user };
 });
 
@@ -79,10 +112,13 @@ ipcMain.handle('auth:register', async (_, data) => {
   const [roles] = await pool.query('SELECT nombre FROM roles WHERE id_rol = ?', [id_rol || 1]);
   const rolStr = roles.length ? roles[0].nombre.toLowerCase().slice(0, 20) : 'admin';
 
+  // Hasheo seguro con Bcrypt (Salt de 10 rondas) antes de almacenar en MySQL
+  const hashedPass = await bcrypt.hash(contrasena, 10);
+
   const [res] = await pool.query(
     `INSERT INTO usuarios (nombre, correo, contrasena, rol, id_rol, telefono, id_comuna)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [nombre, correo, contrasena, rolStr, id_rol || 1, telefono || null, id_comuna || 1]
+    [nombre, correo, hashedPass, rolStr, id_rol || 1, telefono || null, id_comuna || 1]
   );
   return { ok: true, id_usuario: res.insertId };
 });
