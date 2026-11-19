@@ -1,0 +1,22 @@
+DE: josecisternabox@gmail.com
+PARA: josecisterna67@gmail.com
+FECHA: 2026-11-19 18:36:05.830249+00:00
+ASUNTO: ✅ Confirmación de Pago y Reserva #10 - Cabañas Algarrobo
+--------------------------------------------------
+Hola jose cisterna,
+
+¡Tu pago a través de Webpay Plus ha sido aprobado con éxito!
+
+Resumen de la Transacción:
+• Reserva N°: #10
+• Orden de compra: ORD-10-1795113167
+• Código de Autorización Transbank: 1213
+• Tarjeta: **** 6623
+• Monto Pagado: $75.000 CLP
+• Cabaña: Cabaña Mirasol Vista
+• Ubicación: Camino Mirasol 120, Algarrobo
+• Fecha de Entrada: 2026-11-19
+• Fecha de Salida: 2026-11-20
+• Estado: Confirmada
+
+¡Te esperamos en Cabañas Algarrobo!
