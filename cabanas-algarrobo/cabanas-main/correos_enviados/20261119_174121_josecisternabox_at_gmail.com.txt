@@ -1,0 +1,6 @@
+DE: josecisternabox@gmail.com
+PARA: josecisternabox@gmail.com
+FECHA: 2026-11-19 17:41:21.023635+00:00
+ASUNTO: Prueba SMTP Algarrobo Connect
+--------------------------------------------------
+Este es un correo de prueba con la nueva clave de aplicacion.
