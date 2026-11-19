@@ -285,6 +285,13 @@ ipcMain.handle('cabanas:save', async (_, payload) => {
   }
 });
 
+ipcMain.handle('cabanas:updateEstado', async (_, { id_cabana, id_estado }) => {
+  const [estRows] = await pool.query('SELECT nombre FROM estados_cabana WHERE id_estado_cabana = ?', [Number(id_estado)]);
+  const estadoNombre = estRows.length ? estRows[0].nombre : 'Disponible';
+  await pool.query('UPDATE cabanas SET estado = ?, id_estado = ? WHERE id_cabana = ?', [estadoNombre, Number(id_estado), Number(id_cabana)]);
+  return { ok: true, estado: estadoNombre };
+});
+
 ipcMain.handle('cabanas:delete', async (_, id_cabana) => {
   const conn = await pool.getConnection();
   try {
@@ -411,6 +418,52 @@ ipcMain.handle('reservas:save', async (_, payload) => {
       servicios = []
     } = payload;
 
+    // Validar reglas de negocio de fechas y capacidad
+    if (!fecha_inicio || !fecha_fin || fecha_fin <= fecha_inicio) {
+      await conn.rollback();
+      return { ok: false, error: 'La fecha de salida debe ser al menos 1 día posterior a la fecha de llegada.' };
+    }
+
+    const [cabRows] = await conn.query('SELECT nombre, capacidad FROM cabanas WHERE id_cabana = ?', [id_cabana]);
+    if (!cabRows.length) {
+      await conn.rollback();
+      return { ok: false, error: 'La cabaña seleccionada no existe.' };
+    }
+    const validHuespedes = (huespedes || []).filter(h => h.nombre_completo && h.nombre_completo.trim());
+    const totalPersonas = 1 + validHuespedes.length;
+    if (totalPersonas > cabRows[0].capacidad) {
+      await conn.rollback();
+      return { ok: false, error: `Capacidad excedida: ${cabRows[0].nombre} admite máximo ${cabRows[0].capacidad} personas.` };
+    }
+
+    if (Number(id_estado_reserva || 1) !== 5) {
+      const [overlapRes] = await conn.query(
+        `SELECT id_reserva, DATE_FORMAT(fecha_inicio, '%Y-%m-%d') AS fi, DATE_FORMAT(fecha_fin, '%Y-%m-%d') AS ff
+         FROM reservas
+         WHERE id_cabana = ?
+           AND id_reserva != ?
+           AND LOWER(COALESCE(estado, '')) NOT IN ('cancelada', 'rechazada')
+           AND (id_estado_reserva IS NULL OR id_estado_reserva != 5)
+           AND fecha_inicio <= ? AND fecha_fin >= ?`,
+        [id_cabana, Number(id_reserva || 0), fecha_fin, fecha_inicio]
+      );
+      if (overlapRes.length) {
+        await conn.rollback();
+        return { ok: false, error: `Conflicto de fechas con la Reserva #${overlapRes[0].id_reserva} (${overlapRes[0].fi} al ${overlapRes[0].ff}).` };
+      }
+
+      const [overlapBloq] = await conn.query(
+        `SELECT DATE_FORMAT(fecha_desde, '%Y-%m-%d') AS fd, DATE_FORMAT(fecha_hasta, '%Y-%m-%d') AS fh, motivo
+         FROM bloqueos_fechas
+         WHERE id_cabana = ? AND fecha_desde <= ? AND fecha_hasta >= ?`,
+        [id_cabana, fecha_fin, fecha_inicio]
+      );
+      if (overlapBloq.length) {
+        await conn.rollback();
+        return { ok: false, error: `La cabaña está bloqueada del ${overlapBloq[0].fd} al ${overlapBloq[0].fh} (${overlapBloq[0].motivo || 'Bloqueo'}).` };
+      }
+    }
+
     let finalUserId = id_usuario;
     if (!finalUserId && nuevo_cliente && nuevo_cliente.nombre && nuevo_cliente.correo) {
       const [existing] = await conn.query('SELECT id_usuario FROM usuarios WHERE correo = ?', [nuevo_cliente.correo]);
@@ -421,10 +474,11 @@ ipcMain.handle('reservas:save', async (_, payload) => {
           [nuevo_cliente.nombre, nuevo_cliente.telefono || null, nuevo_cliente.id_comuna || 1, finalUserId]
         );
       } else {
+        const defaultHash = await bcrypt.hash('cliente123', 10);
         const [insU] = await conn.query(
           `INSERT INTO usuarios (nombre, correo, contrasena, rol, id_rol, telefono, id_comuna)
-           VALUES (?, ?, 'cliente123', 'cliente', 3, ?, ?)`,
-          [nuevo_cliente.nombre, nuevo_cliente.correo, nuevo_cliente.telefono || null, nuevo_cliente.id_comuna || 1]
+           VALUES (?, ?, ?, 'cliente', 3, ?, ?)`,
+          [nuevo_cliente.nombre, nuevo_cliente.correo, defaultHash, nuevo_cliente.telefono || null, nuevo_cliente.id_comuna || 1]
         );
         finalUserId = insU.insertId;
       }
@@ -546,6 +600,10 @@ ipcMain.handle('pagos:add', async (_, payload) => {
       );
     }
 
+    if (Number(id_estado_pago) === 2) {
+      await conn.query("UPDATE reservas SET estado = 'Confirmada', id_estado_reserva = 2 WHERE id_reserva = ?", [id_reserva]);
+    }
+
     await conn.commit();
     return { ok: true, id_pago: res.insertId };
   } catch (err) {
@@ -557,7 +615,13 @@ ipcMain.handle('pagos:add', async (_, payload) => {
 });
 
 ipcMain.handle('pagos:updateEstado', async (_, { id_pago, id_estado_pago }) => {
-  await pool.query('UPDATE pagos SET id_estado_pago = ? WHERE id_pago = ?', [id_estado_pago, id_pago]);
+  await pool.query('UPDATE pagos SET id_estado_pago = ? WHERE id_pago = ?', [Number(id_estado_pago), Number(id_pago)]);
+  if (Number(id_estado_pago) === 2) {
+    const [rows] = await pool.query('SELECT id_reserva FROM pagos WHERE id_pago = ?', [Number(id_pago)]);
+    if (rows.length && rows[0].id_reserva) {
+      await pool.query("UPDATE reservas SET estado = 'Confirmada', id_estado_reserva = 2 WHERE id_reserva = ?", [rows[0].id_reserva]);
+    }
+  }
   return { ok: true };
 });
 

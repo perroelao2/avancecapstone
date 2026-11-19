@@ -4,9 +4,220 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reserva tu cabaña</title>
+  <title>Reservar {{ cabana.nombre }} - Cabañas Algarrobo</title>
   <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
   <link rel="icon" href="{% static 'img/favicon.png' %}" />
+  <style>
+    .reserva-wrapper {
+      max-width: 1050px;
+      margin: 30px auto;
+      padding: 25px;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+      text-align: left;
+    }
+    .reserva-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-top: 20px;
+    }
+    @media (max-width: 850px) {
+      .reserva-grid { grid-template-columns: 1fr; }
+    }
+    .cabana-ficha {
+      background: #f0f7ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .cabana-ficha h2 {
+      margin: 0 0 8px 0;
+      color: #004B87;
+    }
+    .badge-chip {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 3px 4px 3px 0;
+    }
+    .cal-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 16px;
+      background: #fafafa;
+    }
+    .cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .cal-header button {
+      background: #004B87;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .cal-header span {
+      font-weight: 700;
+      font-size: 16px;
+      color: #1e293b;
+      text-transform: capitalize;
+    }
+    .cal-weekdays, .cal-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      text-align: center;
+    }
+    .cal-weekdays div {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      padding-bottom: 6px;
+    }
+    .cal-day {
+      padding: 9px 4px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .cal-day.empty {
+      background: transparent;
+      cursor: default;
+    }
+    .cal-day.past {
+      background: #e2e8f0;
+      color: #94a3b8;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+    .cal-day.available {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #86efac;
+      cursor: pointer;
+    }
+    .cal-day.available:hover {
+      background: #bbf7d0;
+    }
+    .cal-day.reserved {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #fca5a5;
+      cursor: not-allowed;
+    }
+    .cal-day.blocked {
+      background: #ffedd5;
+      color: #9a3412;
+      border-color: #fdba74;
+      cursor: not-allowed;
+    }
+    .cal-day.selected {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      border-color: #0369a1 !important;
+    }
+    .cal-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #334155;
+    }
+    .section-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: #ffffff;
+    }
+    .section-card h3 {
+      margin-top: 0;
+      color: #004B87;
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .huesped-row {
+      display: grid;
+      grid-template-columns: 1fr 160px auto;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .huesped-row input {
+      padding: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .btn-mini {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn-add { background: #004B87; color: white; }
+    .btn-add:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-rem { background: #dc2626; color: white; }
+    .serv-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13.5px;
+    }
+    .resumen-box {
+      background: #f8fafc;
+      border: 2px solid #004B87;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .resumen-linea {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    .resumen-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 19px;
+      font-weight: 700;
+      color: #004B87;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 10px;
+      margin-top: 8px;
+    }
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body class="login-body">
 
@@ -21,6 +232,7 @@
       <nav id="menu">
         <a href="{% url 'index' %}">Inicio</a>
         <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'panel_cliente' %}">Mi Panel</a>
         <a href="{% url 'contacto' %}">Contacto</a>
         <a href="{% url 'comentarios' %}">Comentarios</a>
       </nav>
@@ -28,19 +240,159 @@
     </div>
   </header>
 
-  <!-- Formulario -->
-  <main class="login-container">
-    <h2>Reservar Cabaña</h2>
-    <form method="post" class="login-form">
+  <main class="reserva-wrapper">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert-error">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Ficha Cabaña -->
+    <div class="cabana-ficha">
+      <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; align-items:center;">
+        <div>
+          <h2>🏡 Reservar: {{ cabana.nombre }}</h2>
+          <p style="margin:4px 0; color:#334155;">📍 {{ cabana.ubicacion }}</p>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:20px; font-weight:700; color:#15803d;">${{ cabana.precio_por_noche|floatformat:0 }} / noche</div>
+          <div style="font-size:13px; color:#475569;">🧍 Capacidad máxima: <strong>{{ cabana.capacidad }} personas</strong></div>
+          <div style="font-size:13px; margin-top:2px;">
+            Estado actual:
+            {% if cabana.estado == 'Disponible' %}
+              <strong style="color:#16a34a;">{{ cabana.estado }}</strong>
+            {% else %}
+              <strong style="color:#dc2626;">{{ cabana.estado }}</strong>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% if comodidades %}
+        <div style="margin-top:8px;">
+          {% for com in comodidades %}
+            <span class="badge-chip">✓ {{ com }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if reglas %}
+        <div style="margin-top:8px; font-size:12.5px; color:#475569;">
+          <strong>Reglas:</strong> {{ reglas|join:" • " }}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if cabana.estado != 'Disponible' %}
+      <div class="alert-error">
+        ⚠️ Esta cabaña actualmente se encuentra en estado <strong>{{ cabana.estado }}</strong> y no acepta reservas hasta que vuelva a estar Disponible.
+        <a href="{% url 'ver_cabanas' %}" style="color:#004B87; margin-left:8px;">Ver otras cabañas</a>
+      </div>
+    {% endif %}
+
+    <form method="post" id="form-reservar-web">
       {% csrf_token %}
-      
-      <label for="fecha_inicio">Fecha Inicio</label>
-      <input type="date" name="fecha_inicio" id="fecha_inicio" required>
+      <div class="reserva-grid">
+        <!-- Columna Izquierda: Calendario Visual -->
+        <div>
+          <div class="cal-box">
+            <h3 style="margin-top:0; color:#004B87;">📅 Calendario de Disponibilidad</h3>
+            <p style="font-size:12.5px; color:#475569; margin-bottom:10px;">
+              Haz clic en un día verde para elegir la <strong>Entrada</strong> y luego en otro día posterior para la <strong>Salida</strong>.
+            </p>
+            <div class="cal-header">
+              <button type="button" id="cal-prev">◀ Anterior</button>
+              <span id="cal-month-label"></span>
+              <button type="button" id="cal-next">Siguiente ▶</button>
+            </div>
+            <div class="cal-weekdays">
+              <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+            </div>
+            <div class="cal-days" id="cal-days-grid"></div>
 
-      <label for="fecha_fin">Fecha Fin</label>
-      <input type="date" name="fecha_fin" id="fecha_fin" required oninput="validarFechas()">
+            <div class="cal-legend">
+              <span>🟩 Disponible</span>
+              <span>🟥 Reservado / Ocupado</span>
+              <span>🟧 Mantención / Bloqueado</span>
+              <span>🟦 Tu Selección</span>
+            </div>
+          </div>
 
-      <button type="submit">Confirmar Reserva</button>
+          <div class="section-card" style="margin-top:16px;">
+            <h3>Fechas Seleccionadas</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <div>
+                <label for="fecha_inicio" style="font-size:13px; font-weight:600;">Fecha Entrada (Check-in)</label>
+                <input type="date" name="fecha_inicio" id="fecha_inicio" min="{{ hoy_str }}" required style="width:100%; padding:8px; margin-top:4px; border:1px solid #cbd5e1; border-radius:6px;">
+              </div>
+              <div>
+                <label for="fecha_fin" style="font-size:13px; font-weight:600;">Fecha Salida (Check-out)</label>
+                <input type="date" name="fecha_fin" id="fecha_fin" min="{{ hoy_str }}" required style="width:100%; padding:8px; margin-top:4px; border:1px solid #cbd5e1; border-radius:6px;">
+              </div>
+            </div>
+            <div id="fechas-alerta" style="margin-top:8px; font-size:12.5px; color:#dc2626; font-weight:600;"></div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Huéspedes, Servicios y Resumen -->
+        <div>
+          <!-- Huéspedes -->
+          <div class="section-card">
+            <h3>
+              <span>👥 Huéspedes y Acompañantes</span>
+              <span id="contador-huespedes" style="font-size:13px; background:#e0f2fe; color:#0369a1; padding:3px 10px; border-radius:12px;">1 / {{ cabana.capacidad }} personas</span>
+            </h3>
+            <div style="background:#f8fafc; padding:8px 12px; border-radius:6px; font-size:13px; margin-bottom:10px;">
+              <strong>Huésped #1 (Titular):</strong> {{ usuario.nombre }} ({{ usuario.correo }})
+            </div>
+            <div id="lista-acompanantes"></div>
+            <button type="button" id="btn-add-acomp" class="btn-mini btn-add">+ Agregar Acompañante</button>
+            <span id="msg-capacidad" style="font-size:12px; color:#64748b; margin-left:8px;">Máximo {{ cabana.capacidad }} personas en total.</span>
+          </div>
+
+          <!-- Servicios Adicionales -->
+          <div class="section-card">
+            <h3>🛎️ Servicios Adicionales (Opcional)</h3>
+            {% if servicios %}
+              {% for s in servicios %}
+                <div class="serv-item">
+                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" name="servicio_id" value="{{ s.id_servicio }}" class="chk-serv" data-precio="{{ s.precio }}" data-id="{{ s.id_servicio }}">
+                    <span><strong>{{ s.nombre }}</strong> — ${{ s.precio }} c/u</span>
+                  </label>
+                  <input type="number" name="servicio_cantidad_{{ s.id_servicio }}" id="cant_serv_{{ s.id_servicio }}" value="1" min="1" max="10" style="width:60px; padding:4px; border:1px solid #cbd5e1; border-radius:4px;" class="qty-serv">
+                </div>
+              {% endfor %}
+            {% else %}
+              <p style="font-size:13px; color:#64748b;">No hay servicios adicionales configurados.</p>
+            {% endif %}
+          </div>
+
+          <!-- Resumen Dinámico -->
+          <div class="resumen-box">
+            <h3 style="margin-top:0; color:#004B87;">💰 Resumen de Reserva</h3>
+            <div class="resumen-linea">
+              <span>Noches seleccionadas:</span>
+              <strong id="res-noches">0 noches</strong>
+            </div>
+            <div class="resumen-linea">
+              <span>Alojamiento (${{ cabana.precio_por_noche|floatformat:0 }} x noche):</span>
+              <strong id="res-sub-alojamiento">$0 CLP</strong>
+            </div>
+            <div class="resumen-linea">
+              <span>Servicios adicionales:</span>
+              <strong id="res-sub-servicios">$0 CLP</strong>
+            </div>
+            <div class="resumen-total">
+              <span>Total Estimado:</span>
+              <span id="res-total">$0 CLP</span>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-confirmar-reserva" class="btn-card" style="width:100%; padding:14px; font-size:16px; font-weight:bold; cursor:pointer;" {% if cabana.estado != 'Disponible' %}disabled{% endif %}>
+            Confirmar Reserva e Ir a Pagar →
+          </button>
+        </div>
+      </div>
     </form>
   </main>
 
@@ -49,5 +401,232 @@
   </footer>
 
   <script src="{% static 'js/scripts.js' %}"></script>
+  <script>
+    const DIAS_OCUPADOS = {{ dias_ocupados_json|safe }};
+    const PRECIO_NOCHE = Number({{ cabana.precio_por_noche|default:0 }});
+    const CAPACIDAD_MAX = Number({{ cabana.capacidad|default:1 }});
+    const HOY_STR = "{{ hoy_str }}";
+
+    let viewDate = new Date();
+    viewDate.setDate(1);
+    let selInicio = null;
+    let selFin = null;
+
+    function formatISO(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function formatCLP(n) {
+      return '$' + Number(n || 0).toLocaleString('es-CL') + ' CLP';
+    }
+
+    function hayConflictoEnRango(inicioStr, finStr) {
+      let cur = new Date(inicioStr + 'T00:00:00');
+      const fin = new Date(finStr + 'T00:00:00');
+      while (cur <= fin) {
+        const key = formatISO(cur);
+        if (DIAS_OCUPADOS[key]) {
+          return { conflicto: true, fecha: key, motivo: DIAS_OCUPADOS[key].motivo };
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      return { conflicto: false };
+    }
+
+    function renderCalendario() {
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+      const monthLabel = viewDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
+      document.getElementById('cal-month-label').textContent = monthLabel;
+
+      const grid = document.getElementById('cal-days-grid');
+      grid.innerHTML = '';
+
+      const firstDay = new Date(year, month, 1);
+      let startWeekday = firstDay.getDay(); // 0=Dom .. 6=Sab
+      startWeekday = startWeekday === 0 ? 6 : startWeekday - 1; // 0=Lun .. 6=Dom
+
+      for (let i = 0; i < startWeekday; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'cal-day empty';
+        grid.appendChild(empty);
+      }
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let d = 1; d <= daysInMonth; d++) {
+        const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const cell = document.createElement('div');
+        cell.textContent = d;
+        cell.className = 'cal-day';
+
+        const occ = DIAS_OCUPADOS[iso];
+        if (occ) {
+          cell.classList.add(occ.tipo === 'reservado' ? 'reserved' : 'blocked');
+          cell.title = occ.motivo;
+        } else if (iso < HOY_STR) {
+          cell.classList.add('past');
+          cell.title = 'Fecha pasada';
+        } else {
+          cell.classList.add('available');
+          cell.title = 'Disponible - Haz clic para seleccionar';
+          if (selInicio && selFin && iso >= selInicio && iso <= selFin) {
+            cell.classList.add('selected');
+          } else if (selInicio && !selFin && iso === selInicio) {
+            cell.classList.add('selected');
+          }
+          cell.addEventListener('click', () => onClickDia(iso));
+        }
+        grid.appendChild(cell);
+      }
+    }
+
+    function onClickDia(iso) {
+      const alerta = document.getElementById('fechas-alerta');
+      alerta.textContent = '';
+
+      if (!selInicio || (selInicio && selFin)) {
+        selInicio = iso;
+        selFin = null;
+        document.getElementById('fecha_inicio').value = iso;
+        document.getElementById('fecha_fin').value = '';
+      } else if (iso <= selInicio) {
+        selInicio = iso;
+        selFin = null;
+        document.getElementById('fecha_inicio').value = iso;
+        document.getElementById('fecha_fin').value = '';
+      } else {
+        const check = hayConflictoEnRango(selInicio, iso);
+        if (check.conflicto) {
+          alerta.textContent = `❌ No puedes cruzar el día ${check.fecha} (${check.motivo}). Elige otro rango sin días ocupados.`;
+          return;
+        }
+        selFin = iso;
+        document.getElementById('fecha_inicio').value = selInicio;
+        document.getElementById('fecha_fin').value = selFin;
+      }
+      renderCalendario();
+      recalcularResumen();
+    }
+
+    document.getElementById('cal-prev').addEventListener('click', () => {
+      viewDate.setMonth(viewDate.getMonth() - 1);
+      renderCalendario();
+    });
+    document.getElementById('cal-next').addEventListener('click', () => {
+      viewDate.setMonth(viewDate.getMonth() + 1);
+      renderCalendario();
+    });
+
+    function sincronizarInputsManuales() {
+      const ini = document.getElementById('fecha_inicio').value;
+      const fin = document.getElementById('fecha_fin').value;
+      const alerta = document.getElementById('fechas-alerta');
+      alerta.textContent = '';
+
+      if (ini && DIAS_OCUPADOS[ini]) {
+        alerta.textContent = `❌ La fecha de entrada ${ini} ya está ocupada (${DIAS_OCUPADOS[ini].motivo}).`;
+        document.getElementById('fecha_inicio').value = '';
+        selInicio = null;
+        selFin = null;
+        renderCalendario();
+        recalcularResumen();
+        return;
+      }
+      if (ini && fin) {
+        if (fin <= ini) {
+          alerta.textContent = '❌ La fecha de salida debe ser posterior a la entrada.';
+          document.getElementById('fecha_fin').value = '';
+          selFin = null;
+        } else {
+          const check = hayConflictoEnRango(ini, fin);
+          if (check.conflicto) {
+            alerta.textContent = `❌ El período incluye el día ocupado ${check.fecha} (${check.motivo}).`;
+            document.getElementById('fecha_fin').value = '';
+            selFin = null;
+          } else {
+            selInicio = ini;
+            selFin = fin;
+          }
+        }
+      } else {
+        selInicio = ini || null;
+        selFin = null;
+      }
+      renderCalendario();
+      recalcularResumen();
+    }
+
+    document.getElementById('fecha_inicio').addEventListener('change', sincronizarInputsManuales);
+    document.getElementById('fecha_fin').addEventListener('change', sincronizarInputsManuales);
+
+    // Huéspedes adicionales
+    const listaAcomp = document.getElementById('lista-acompanantes');
+    const btnAddAcomp = document.getElementById('btn-add-acomp');
+
+    function actualizarContadorHuespedes() {
+      const total = 1 + listaAcomp.querySelectorAll('.huesped-row').length;
+      document.getElementById('contador-huespedes').textContent = `${total} / ${CAPACIDAD_MAX} personas`;
+      btnAddAcomp.disabled = total >= CAPACIDAD_MAX;
+    }
+
+    btnAddAcomp.addEventListener('click', () => {
+      const totalActual = 1 + listaAcomp.querySelectorAll('.huesped-row').length;
+      if (totalActual >= CAPACIDAD_MAX) {
+        alert(`Capacidad máxima de ${CAPACIDAD_MAX} personas alcanzada.`);
+        return;
+      }
+      const row = document.createElement('div');
+      row.className = 'huesped-row';
+      row.innerHTML = `
+        <input type="text" name="huesped_nombre" placeholder="Nombre completo acompañante" required />
+        <input type="text" name="huesped_rut" placeholder="RUT / Pasaporte" />
+        <button type="button" class="btn-mini btn-rem">Quitar</button>
+      `;
+      row.querySelector('.btn-rem').addEventListener('click', () => {
+        row.remove();
+        actualizarContadorHuespedes();
+      });
+      listaAcomp.appendChild(row);
+      actualizarContadorHuespedes();
+    });
+
+    // Resumen financiero en tiempo real
+    function recalcularResumen() {
+      const ini = document.getElementById('fecha_inicio').value;
+      const fin = document.getElementById('fecha_fin').value;
+      let noches = 0;
+      if (ini && fin && fin > ini) {
+        const d1 = new Date(ini + 'T00:00:00');
+        const d2 = new Date(fin + 'T00:00:00');
+        noches = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+      }
+      const subAloj = noches * PRECIO_NOCHE;
+
+      let subServ = 0;
+      document.querySelectorAll('.chk-serv:checked').forEach(chk => {
+        const sid = chk.getAttribute('data-id');
+        const precio = Number(chk.getAttribute('data-precio') || 0);
+        const cant = Math.max(1, Number(document.getElementById('cant_serv_' + sid)?.value || 1));
+        subServ += precio * cant;
+      });
+
+      document.getElementById('res-noches').textContent = `${noches} ${noches === 1 ? 'noche' : 'noches'}`;
+      document.getElementById('res-sub-alojamiento').textContent = formatCLP(subAloj);
+      document.getElementById('res-sub-servicios').textContent = formatCLP(subServ);
+      document.getElementById('res-total').textContent = formatCLP(subAloj + subServ);
+    }
+
+    document.querySelectorAll('.chk-serv, .qty-serv').forEach(el => {
+      el.addEventListener('change', recalcularResumen);
+      el.addEventListener('input', recalcularResumen);
+    });
+
+    renderCalendario();
+    actualizarContadorHuespedes();
+    recalcularResumen();
+  </script>
 </body>
 </html>

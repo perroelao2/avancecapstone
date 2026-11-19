@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pago por Transferencia</title>
+  <title>Métodos de Pago - Cabañas Algarrobo</title>
   <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
 </head>
 <body class="login-body">
@@ -25,6 +25,7 @@
       <nav id="menu">
         <a href="{% url 'index' %}">Inicio</a>
         <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'panel_cliente' %}">Mi Panel</a>
         <a href="{% url 'contacto' %}">Contacto</a>
         <a href="{% url 'comentarios' %}">Comentarios</a>
       </nav>
@@ -32,12 +33,35 @@
     </div>
   </header>
 
-  <main class="login-container" style="max-width: 650px;">
-    <h2>Métodos de Pago Disponibles</h2>
-    <p>Selecciona cómo deseas abonar tu reserva en Cabañas Algarrobo:</p>
+  <main class="login-container" style="max-width: 720px; text-align: left;">
+    <h2 style="text-align: center;">Métodos de Pago Disponibles</h2>
+    <p style="text-align: center; color: #475569;">Selecciona cómo deseas abonar tu reserva en Cabañas Algarrobo:</p>
+
+    {% if reserva %}
+    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+      <h3 style="margin-top: 0; color: #004B87;">📋 Detalle de Reserva #{{ reserva.id_reserva }}</h3>
+      <p style="margin: 4px 0;"><strong>Cabaña:</strong> {{ reserva.cabana.nombre }} ({{ reserva.cabana.ubicacion }})</p>
+      <p style="margin: 4px 0;"><strong>Estadía:</strong> {{ reserva.fecha_inicio }} al {{ reserva.fecha_fin }} ({{ noches }} {{ noches|pluralize:"noche,noches" }})</p>
+      <p style="margin: 4px 0;"><strong>Total de huéspedes:</strong> {{ huespedes|length|add:1 }} persona(s)
+        {% if huespedes %}
+          — Acompañantes: {% for h in huespedes %}{{ h.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        {% endif %}
+      </p>
+      {% if servicios %}
+      <p style="margin: 4px 0;"><strong>Servicios adicionales:</strong>
+        {% for s in servicios %}
+          {{ s.nombre }} x{{ s.cantidad }} (${{ s.subtotal }}){% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      </p>
+      {% endif %}
+      <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #cbd5e1; font-size: 18px; font-weight: bold; color: #15803d;">
+        Monto Total a Pagar: ${{ monto_total }} CLP
+      </div>
+    </div>
+    {% endif %}
 
     <!-- Opción 1: Webpay Plus -->
-    <div style="background: #e8f4fd; border: 2px solid #004B87; border-radius: 10px; padding: 22px; margin-bottom: 25px; text-align: left;">
+    <div style="background: #e8f4fd; border: 2px solid #004B87; border-radius: 10px; padding: 22px; margin-bottom: 25px;">
       <h3 style="color: #004B87; margin-top: 0; display: flex; align-items: center; justify-content: space-between;">
         <span>💳 Pago en Línea (Webpay Plus)</span>
         <span style="font-size: 12px; background: #22c55e; color: white; padding: 4px 10px; border-radius: 12px;">Confirmación Inmediata</span>
@@ -46,30 +70,36 @@
         Paga de forma rápida y 100% segura con tus tarjetas de <strong>Débito, Crédito o Prepago</strong> a través de la pasarela oficial de Transbank.
       </p>
       {% if reserva %}
-      <p style="font-size: 15px; margin-bottom: 15px;">
-        <strong>Reserva #{{ reserva.id_reserva }}:</strong> {{ reserva.cabana.nombre }} ({{ reserva.fecha_inicio }} al {{ reserva.fecha_fin }})<br>
-        <strong>Monto a pagar:</strong> ${{ reserva.cabana.precio_por_noche|default:50000 }}
-      </p>
-      {% endif %}
-      <a href="{% url 'iniciar_pago_webpay' %}" style="display: block; text-align: center; background-color: #f75500; color: white; padding: 12px 20px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 16px;">
-        Pagar con Webpay Plus 🔒
+      <a href="{% url 'iniciar_pago_webpay' %}?reserva_id={{ reserva.id_reserva }}" style="display: block; text-align: center; background-color: #f75500; color: white; padding: 12px 20px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 16px;">
+        Pagar ${{ monto_total }} CLP con Webpay Plus 🔒
       </a>
+      {% else %}
+      <a href="{% url 'ver_cabanas' %}" style="display: block; text-align: center; background-color: #94a3b8; color: white; padding: 12px 20px; border-radius: 6px; font-weight: bold; text-decoration: none;">
+        No tienes reservas pendientes (Ir a Cabañas)
+      </a>
+      {% endif %}
     </div>
 
     <!-- Opción 2: Transferencia -->
-    <div style="background: #fdfdfd; border: 1px solid #cbd5e1; border-radius: 10px; padding: 22px; text-align: left;">
+    <div style="background: #fdfdfd; border: 1px solid #cbd5e1; border-radius: 10px; padding: 22px;">
       <h3 style="margin-top: 0; color: #334155;">🏦 Transferencia Bancaria Manual</h3>
       <p style="font-size: 13px; color: #64748b; margin-bottom: 10px;">Requiere validación manual por parte del equipo de administración.</p>
-      <div style="font-size: 14px; line-height: 1.6; color: #1e293b;">
-        <p><strong>Banco:</strong> BancoEstado | <strong>Tipo:</strong> Cuenta Rut</p>
-        <p><strong>Número de Cuenta:</strong> 123456789 | <strong>RUT:</strong> 12.345.678-9</p>
-        <p><strong>Nombre:</strong> Cabañas Algarrobo | <strong>Correo:</strong> contacto@cabanasalgarrobo.cl</p>
+      <div style="font-size: 14px; line-height: 1.6; color: #1e293b; margin-bottom: 14px;">
+        <p style="margin: 2px 0;"><strong>Banco:</strong> BancoEstado | <strong>Tipo:</strong> Cuenta Rut</p>
+        <p style="margin: 2px 0;"><strong>Número de Cuenta:</strong> 123456789 | <strong>RUT:</strong> 12.345.678-9</p>
+        <p style="margin: 2px 0;"><strong>Nombre:</strong> Cabañas Algarrobo | <strong>Correo:</strong> contacto@cabanasalgarrobo.cl</p>
       </div>
-      <br>
+      {% if reserva %}
       <form method="POST" class="login-form">
         {% csrf_token %}
-        <button type="submit" style="background-color: #475569;">Reportar Pago por Transferencia</button>
+        <input type="hidden" name="reserva_id" value="{{ reserva.id_reserva }}">
+        <label for="banco_origen" style="font-size: 13px; font-weight: 600;">Banco de Origen</label>
+        <input type="text" name="banco_origen" id="banco_origen" placeholder="Ej: BancoEstado, BCI, Santander..." required style="margin-bottom: 10px;">
+        <label for="numero_operacion" style="font-size: 13px; font-weight: 600;">N° de Operación / Comprobante</label>
+        <input type="text" name="numero_operacion" id="numero_operacion" placeholder="Ej: 9847123" required style="margin-bottom: 14px;">
+        <button type="submit" style="background-color: #475569;">Reportar Pago por Transferencia (${{ monto_total }} CLP)</button>
       </form>
+      {% endif %}
     </div>
   </main>
 

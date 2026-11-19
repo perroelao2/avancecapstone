@@ -11,6 +11,7 @@ urlpatterns = [
     path('cliente-panel/', views.panel_cliente, name='panel_cliente'),
     path('cabanas/', views.ver_cabanas, name='ver_cabanas'),
     path('reservar/<int:id_cabana>/', views.reservar_cabana, name='reservar_cabana'),
+    path('cancelar-reserva/<int:id_reserva>/', views.cancelar_reserva_cliente, name='cancelar_reserva_cliente'),
     path('reservas/', views.reservar_formulario, name='reservas'),
     path('contacto/', views.contacto_view, name='contacto'),
     path('guardar-mensaje/', views.guardar_mensaje, name='guardar_mensaje'),

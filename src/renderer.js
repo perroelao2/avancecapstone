@@ -138,6 +138,13 @@ const HERO_CONFIG = {
 };
 
 function navigateTo(viewKey) {
+  if (viewKey !== 'cabana-add' && viewKey !== 'cabana-edit') {
+    activeCabanaEdit = null;
+  }
+  if (viewKey !== 'reserva-detail') {
+    activeReservaEdit = null;
+  }
+
   const sections = [
     'section-inicio',
     'section-cabanas',
@@ -272,7 +279,14 @@ function renderCabanasList() {
         </div>
 
         <div class="entity-actions">
-          <div class="status-banner ${statusClass}">${estadoLabel}</div>
+          <select class="status-banner ${statusClass}" style="cursor:pointer; border:none; text-align:center; width:170px;" onchange="cambiarEstadoCabanaRapido(${cab.id_cabana}, this.value)">
+            ${(catalogs.estadosCabana || [])
+              .map(est => {
+                const isSel = Number(cab.id_estado) === Number(est.id_estado_cabana) || (!cab.id_estado && est.nombre === estadoLabel);
+                return `<option value="${est.id_estado_cabana}" style="color:#1e293b; background:#fff;" ${isSel ? 'selected' : ''}>${est.nombre}</option>`;
+              })
+              .join('')}
+          </select>
           <button class="btn-pill btn-primary btn-sm" style="width:170px;" onclick="openEditCabana(${cab.id_cabana})">Editar Cabaña</button>
           <button class="btn-pill btn-primary btn-sm" style="width:170px;" onclick="deleteCabana(${cab.id_cabana})">Eliminar Cabaña</button>
         </div>
@@ -280,6 +294,17 @@ function renderCabanasList() {
     })
     .join('');
 }
+
+window.cambiarEstadoCabanaRapido = async function(id_cabana, id_estado) {
+  const res = await window.api.invoke('cabanas:updateEstado', {
+    id_cabana: Number(id_cabana),
+    id_estado: Number(id_estado)
+  });
+  await refreshAllData();
+  if (res && res.ok) {
+    showToast(`Estado de cabaña actualizado a: ${res.estado}`);
+  }
+};
 
 // ======================== ABRIR CREAR / EDITAR CABAÑA ========================
 function renderCabanaFormGallery() {
@@ -1114,6 +1139,12 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('btn-add-huesped').addEventListener('click', () => {
+    const id_cabana = Number(document.getElementById('res-cabana').value);
+    const cab = cabanas.find(c => Number(c.id_cabana) === id_cabana);
+    if (cab && (1 + tempHuespedes.length) >= Number(cab.capacidad)) {
+      showToast(`Capacidad máxima alcanzada: ${cab.nombre} admite hasta ${cab.capacidad} personas (titular + acompañantes).`);
+      return;
+    }
     const nombre_completo = document.getElementById('new-huesped-nombre').value.trim();
     const rut_o_pasaporte = document.getElementById('new-huesped-rut').value.trim();
     if (!nombre_completo) {

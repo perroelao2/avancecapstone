@@ -87,9 +87,9 @@
         <p>
           Estado:
           {% if c.estado == "Disponible" %}
-          <span style="color: green; font-weight: bold;">Disponible</span>
+          <span style="color: green; font-weight: bold;">{{ c.estado }}</span>
           {% else %}
-          <span style="color: red; font-weight: bold;">No Disponible</span>
+          <span style="color: red; font-weight: bold;">{{ c.estado }}</span>
           {% endif %}
         </p>
       </div>
@@ -98,7 +98,7 @@
         {% if c.estado == "Disponible" %}
         <a href="{% url 'reservar_cabana' c.id_cabana %}" class="btn-card">Reservar</a>
         {% else %}
-        <button class="btn-card" style="background-color: #ccc; cursor: not-allowed;" disabled>No Disponible</button>
+        <button class="btn-card" style="background-color: #ccc; cursor: not-allowed;" disabled>{{ c.estado }}</button>
         {% endif %}
       </div>
     </div>

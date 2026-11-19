@@ -1,0 +1,20 @@
+DE: josecisternabox@gmail.com
+PARA: josecisterna67@gmail.com
+FECHA: 2026-11-19 16:57:41.823537+00:00
+ASUNTO: ✅ Confirmación de Pago y Reserva #6 - Cabañas Algarrobo Connect
+--------------------------------------------------
+Hola jose cisterna,
+
+¡Tu pago a través de Webpay Plus ha sido aprobado con éxito!
+
+Resumen de la Transacción:
+• Orden de compra: ORD-6-1795107402
+• Código de Autorización Transbank: 1213
+• Tarjeta: **** 6623
+• Monto Pagado: $55,000 CLP
+• Cabaña: Cabaña El Canelo
+• Fecha de Entrada: 2026-11-19
+• Fecha de Salida: 2026-11-19
+• Estado: Confirmada
+
+¡Te esperamos en Cabañas Algarrobo Connect!

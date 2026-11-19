@@ -21,6 +21,9 @@ class Cabana(models.Model):
     ubicacion = models.CharField(max_length=100)
     capacidad = models.IntegerField()
     estado = models.CharField(max_length=20, default='Disponible')
+    id_estado = models.IntegerField(default=1, null=True, blank=True)
+    id_comuna = models.IntegerField(default=1, null=True, blank=True)
+    id_sector = models.IntegerField(default=1, null=True, blank=True)
     precio_por_noche = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     class Meta:
@@ -38,6 +41,9 @@ class Reserva(models.Model):
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
     estado = models.CharField(max_length=20, default='Pendiente')
+    id_estado_reserva = models.IntegerField(default=1, null=True, blank=True)
+    monto_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    fecha_creacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     class Meta:
         db_table = 'reservas'
