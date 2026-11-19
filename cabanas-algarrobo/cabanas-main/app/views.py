@@ -1,3 +1,4 @@
+import os
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -7,6 +8,43 @@ from django.conf import settings
 from django.db import connection
 
 from .models import Pago, Usuario, Cabana, Reserva, Comentario
+
+
+def despachar_correo_sistema(asunto, cuerpo, destinatario):
+    """
+    Envía el correo vía SMTP y además guarda una copia de respaldo en correos_enviados/
+    para que siempre se pueda auditar e inspeccionar el contenido completo del correo.
+    """
+    # 1. Guardar copia local en correos_enviados/
+    try:
+        carpeta_correos = os.path.join(settings.BASE_DIR, 'correos_enviados')
+        os.makedirs(carpeta_correos, exist_ok=True)
+        timestamp_str = timezone.now().strftime('%Y%m%d_%H%M%S')
+        nombre_archivo = f"{timestamp_str}_{str(destinatario).replace('@', '_at_')}.txt"
+        ruta_archivo = os.path.join(carpeta_correos, nombre_archivo)
+        with open(ruta_archivo, 'w', encoding='utf-8') as f:
+            f.write(f"DE: {settings.EMAIL_HOST_USER}\n")
+            f.write(f"PARA: {destinatario}\n")
+            f.write(f"FECHA: {timezone.now()}\n")
+            f.write(f"ASUNTO: {asunto}\n")
+            f.write("-" * 50 + "\n")
+            f.write(cuerpo)
+        print(f"📩 [CORREO REGISTRADO EN DISCO]: {ruta_archivo}")
+    except Exception as e:
+        print("Error guardando copia de correo en disco:", e)
+
+    # 2. Enviar por SMTP a través de Gmail
+    try:
+        send_mail(
+            subject=asunto,
+            message=cuerpo,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[destinatario],
+            fail_silently=False
+        )
+        print(f"✅ [CORREO SMTP ENVIADO]: Para {destinatario}")
+    except Exception as e:
+        print(f"⚠️ [AVISO SMTP]: No se pudo entregar vía Gmail SMTP ({e}). Copia respaldada en disco.")
 
 
 # Página principal (pública)
@@ -270,30 +308,23 @@ def retorno_pago_webpay(request):
                         print("Error logging whatsapp notification:", e)
 
                     # Enviar correo electrónico de confirmación al cliente
-                    try:
-                        correo_cliente = reserva.usuario.correo if reserva.usuario and reserva.usuario.correo else settings.EMAIL_HOST_USER
-                        send_mail(
-                            subject=f"✅ Confirmación de Pago y Reserva #{reserva.id_reserva} - Cabañas Algarrobo Connect",
-                            message=(
-                                f"Hola {reserva.usuario.nombre},\n\n"
-                                f"¡Tu pago a través de Webpay Plus ha sido aprobado con éxito!\n\n"
-                                f"Resumen de la Transacción:\n"
-                                f"• Orden de compra: {buy_order}\n"
-                                f"• Código de Autorización Transbank: {auth_code}\n"
-                                f"• Tarjeta: **** {card_last4}\n"
-                                f"• Monto Pagado: ${amount:,.0f} CLP\n"
-                                f"• Cabaña: {reserva.cabana.nombre}\n"
-                                f"• Fecha de Entrada: {reserva.fecha_inicio}\n"
-                                f"• Fecha de Salida: {reserva.fecha_fin}\n"
-                                f"• Estado: Confirmada\n\n"
-                                f"¡Te esperamos en Cabañas Algarrobo Connect!"
-                            ),
-                            from_email=settings.EMAIL_HOST_USER,
-                            recipient_list=[correo_cliente],
-                            fail_silently=True
-                        )
-                    except Exception as e:
-                        print("Error enviando correo de confirmacion:", e)
+                    correo_cliente = reserva.usuario.correo if reserva.usuario and reserva.usuario.correo else settings.EMAIL_HOST_USER
+                    asunto_correo = f"✅ Confirmación de Pago y Reserva #{reserva.id_reserva} - Cabañas Algarrobo Connect"
+                    cuerpo_correo = (
+                        f"Hola {reserva.usuario.nombre},\n\n"
+                        f"¡Tu pago a través de Webpay Plus ha sido aprobado con éxito!\n\n"
+                        f"Resumen de la Transacción:\n"
+                        f"• Orden de compra: {buy_order}\n"
+                        f"• Código de Autorización Transbank: {auth_code}\n"
+                        f"• Tarjeta: **** {card_last4}\n"
+                        f"• Monto Pagado: ${amount:,.0f} CLP\n"
+                        f"• Cabaña: {reserva.cabana.nombre}\n"
+                        f"• Fecha de Entrada: {reserva.fecha_inicio}\n"
+                        f"• Fecha de Salida: {reserva.fecha_fin}\n"
+                        f"• Estado: Confirmada\n\n"
+                        f"¡Te esperamos en Cabañas Algarrobo Connect!"
+                    )
+                    despachar_correo_sistema(asunto_correo, cuerpo_correo, correo_cliente)
 
                     return render(request, 'vistas/webpay_voucher.html', {
                         'reserva': reserva,
@@ -332,16 +363,9 @@ def guardar_mensaje(request):
                 VALUES (%s, %s, %s)
             """, [nombre, correo, mensaje])
 
-        try:
-            send_mail(
-                subject='📩 Nuevo mensaje de contacto',
-                message=f'Nombre: {nombre}\nCorreo: {correo}\n\nMensaje:\n{mensaje}',
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[settings.EMAIL_HOST_USER],
-                fail_silently=True,
-            )
-        except Exception:
-            pass
+        asunto_contacto = f'📩 Nuevo mensaje de contacto de {nombre}'
+        cuerpo_contacto = f'Nombre: {nombre}\nCorreo: {correo}\n\nMensaje:\n{mensaje}'
+        despachar_correo_sistema(asunto_contacto, cuerpo_contacto, settings.EMAIL_HOST_USER)
 
         messages.success(request, '✅ Mensaje enviado correctamente.')
         return redirect('contacto')
