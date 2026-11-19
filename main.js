@@ -7,6 +7,7 @@ const { pool } = require('./db');
 
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('no-sandbox');
+app.commandLine.appendSwitch('disable-dev-shm-usage');
 
 
 function ensureDatabaseRunning() {

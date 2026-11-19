@@ -4,8 +4,8 @@
   "description": "Sistema de Administración de Cabañas Algarrobo Connect (Electron + MySQL)",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "start:linux": "bash ./start-db.sh && electron . --no-sandbox",
+    "start": "electron . --disable-dev-shm-usage",
+    "start:linux": "bash ./start-db.sh && electron . --no-sandbox --disable-dev-shm-usage",
     "test:db": "node test-db.js"
   },
   "repository": {

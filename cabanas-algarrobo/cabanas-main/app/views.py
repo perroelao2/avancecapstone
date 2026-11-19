@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from django.core.mail import send_mail, BadHeaderError
+from django.conf import settings
 from django.db import connection
 
 from .models import Pago, Usuario, Cabana, Reserva, Comentario
@@ -268,6 +269,32 @@ def retorno_pago_webpay(request):
                     except Exception as e:
                         print("Error logging whatsapp notification:", e)
 
+                    # Enviar correo electrónico de confirmación al cliente
+                    try:
+                        correo_cliente = reserva.usuario.correo if reserva.usuario and reserva.usuario.correo else settings.EMAIL_HOST_USER
+                        send_mail(
+                            subject=f"✅ Confirmación de Pago y Reserva #{reserva.id_reserva} - Cabañas Algarrobo Connect",
+                            message=(
+                                f"Hola {reserva.usuario.nombre},\n\n"
+                                f"¡Tu pago a través de Webpay Plus ha sido aprobado con éxito!\n\n"
+                                f"Resumen de la Transacción:\n"
+                                f"• Orden de compra: {buy_order}\n"
+                                f"• Código de Autorización Transbank: {auth_code}\n"
+                                f"• Tarjeta: **** {card_last4}\n"
+                                f"• Monto Pagado: ${amount:,.0f} CLP\n"
+                                f"• Cabaña: {reserva.cabana.nombre}\n"
+                                f"• Fecha de Entrada: {reserva.fecha_inicio}\n"
+                                f"• Fecha de Salida: {reserva.fecha_fin}\n"
+                                f"• Estado: Confirmada\n\n"
+                                f"¡Te esperamos en Cabañas Algarrobo Connect!"
+                            ),
+                            from_email=settings.EMAIL_HOST_USER,
+                            recipient_list=[correo_cliente],
+                            fail_silently=True
+                        )
+                    except Exception as e:
+                        print("Error enviando correo de confirmacion:", e)
+
                     return render(request, 'vistas/webpay_voucher.html', {
                         'reserva': reserva,
                         'buy_order': buy_order,
@@ -309,8 +336,8 @@ def guardar_mensaje(request):
             send_mail(
                 subject='📩 Nuevo mensaje de contacto',
                 message=f'Nombre: {nombre}\nCorreo: {correo}\n\nMensaje:\n{mensaje}',
-                from_email='tunuevocorreo@gmail.com',
-                recipient_list=['rodrigo01acr@gmail.com'],
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[settings.EMAIL_HOST_USER],
                 fail_silently=True,
             )
         except Exception:
