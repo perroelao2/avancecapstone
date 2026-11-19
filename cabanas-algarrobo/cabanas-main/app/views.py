@@ -1,8 +1,11 @@
 import os
 import json
+import html
 import smtplib
 from datetime import date, datetime, timedelta
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formataddr
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -13,10 +16,70 @@ from django.db import connection
 from .models import Pago, Usuario, Cabana, Reserva, Comentario
 
 
-def despachar_correo_sistema(asunto, cuerpo, destinatario, id_usuario=None):
+def _construir_html_correo(titulo, subtitulo, filas_detalle, texto_adicional='', badge_texto='Confirmado', badge_color='#16a34a'):
+    """Genera una plantilla HTML institucional responsiva para los correos de Cabañas Algarrobo."""
+    filas_html = ''.join(
+        f"""
+        <tr>
+          <td style="padding:10px 14px; border-bottom:1px solid #e2e8f0; color:#475569; font-weight:600; font-size:13.5px; width:44%;">{html.escape(str(etiqueta))}</td>
+          <td style="padding:10px 14px; border-bottom:1px solid #e2e8f0; color:#0f172a; font-weight:600; font-size:13.5px; text-align:right;">{html.escape(str(valor))}</td>
+        </tr>
+        """
+        for etiqueta, valor in filas_detalle
+    )
+    extra_html = ''
+    if texto_adicional:
+        extra_html = f"""
+        <div style="margin-top:18px; padding:14px 16px; background:#f8fafc; border-left:4px solid #004B87; border-radius:6px; color:#334155; font-size:14px; line-height:1.55; white-space:pre-line;">
+          {html.escape(str(texto_adicional))}
+        </div>
+        """
+
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8" /></head>
+<body style="margin:0; padding:24px 12px; background-color:#f1f5f9; font-family:'Segoe UI', Arial, Helvetica, sans-serif;">
+  <div style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(15,23,42,0.08); border:1px solid #e2e8f0;">
+    <div style="background:linear-gradient(135deg, #004B87 0%, #0284c7 100%); padding:26px 28px; text-align:center; color:#ffffff;">
+      <div style="font-size:22px; font-weight:700; letter-spacing:0.3px;">🏡 Cabañas Algarrobo</div>
+      <div style="font-size:13px; color:#e0f2fe; margin-top:4px;">El Manzano, Algarrobo — Litoral Central, Chile</div>
+    </div>
+
+    <div style="padding:28px;">
+      <div style="text-align:center; margin-bottom:18px;">
+        <span style="display:inline-block; background:{badge_color}; color:#ffffff; padding:5px 14px; border-radius:999px; font-size:12px; font-weight:700; letter-spacing:0.4px; text-transform:uppercase;">
+          {html.escape(str(badge_texto))}
+        </span>
+      </div>
+
+      <h2 style="margin:0 0 8px 0; color:#004B87; font-size:20px; text-align:center;">{html.escape(str(titulo))}</h2>
+      <p style="margin:0 0 22px 0; color:#475569; font-size:14.5px; line-height:1.55; text-align:center;">
+        {html.escape(str(subtitulo))}
+      </p>
+
+      <table style="width:100%; border-collapse:collapse; background:#f8fafc; border-radius:8px; overflow:hidden; border:1px solid #e2e8f0;">
+        <tbody>
+          {filas_html}
+        </tbody>
+      </table>
+
+      {extra_html}
+    </div>
+
+    <div style="background:#f8fafc; padding:18px 24px; text-align:center; border-top:1px solid #e2e8f0; color:#64748b; font-size:12.5px; line-height:1.5;">
+      <strong style="color:#004B87;">¡Te esperamos en Cabañas Algarrobo!</strong><br />
+      Este correo fue generado automáticamente. Ante cualquier consulta, contáctanos desde nuestro sitio web.
+    </div>
+  </div>
+</body>
+</html>"""
+
+
+def despachar_correo_sistema(asunto, cuerpo, destinatario, id_usuario=None, html_cuerpo=None):
     """
-    Envía el correo vía SMTP limpiando espacios de la clave de aplicación,
-    guarda copia de respaldo en correos_enviados/ y registra notificación interna en BD.
+    Envía el correo multipart (texto plano + HTML institucional) vía SMTP limpiando espacios
+    de la clave de aplicación, guarda copia de respaldo en correos_enviados/ y registra
+    notificación interna en BD.
     """
     # 1. Guardar copia local en correos_enviados/
     try:
@@ -58,19 +121,30 @@ def despachar_correo_sistema(asunto, cuerpo, destinatario, id_usuario=None):
     except Exception as e:
         print("Error registrando notificación interna:", e)
 
-    # 3. Enviar por SMTP a través de Gmail
+    # 3. Enviar por SMTP a través de Gmail (Texto Plano + HTML)
     smtp_user = (settings.EMAIL_HOST_USER or '').strip()
     smtp_pass = (settings.EMAIL_HOST_PASSWORD or '').replace(' ', '').strip()
     if not smtp_user or not smtp_pass:
         print("⚠️ [AVISO SMTP]: Faltan credenciales EMAIL_HOST_USER/EMAIL_HOST_PASSWORD. Copia respaldada en disco.")
         return False
 
+    html_final = html_cuerpo or _construir_html_correo(
+        titulo=asunto,
+        subtitulo='Notificación oficial de Cabañas Algarrobo',
+        filas_detalle=[('Destinatario', destinatario), ('Fecha', timezone.now().strftime('%Y-%m-%d %H:%M'))],
+        texto_adicional=cuerpo,
+        badge_texto='Aviso',
+        badge_color='#004B87'
+    )
+
     server = None
     try:
-        msg = MIMEText(cuerpo, 'plain', 'utf-8')
+        msg = MIMEMultipart('alternative')
         msg['Subject'] = asunto
-        msg['From'] = smtp_user
+        msg['From'] = formataddr(('Cabañas Algarrobo', smtp_user))
         msg['To'] = destinatario
+        msg.attach(MIMEText(cuerpo, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html_final, 'html', 'utf-8'))
 
         server = smtplib.SMTP(settings.EMAIL_HOST, int(settings.EMAIL_PORT), timeout=10)
         server.ehlo()
@@ -698,26 +772,48 @@ def retorno_pago_webpay(request):
 
                     # Enviar correo electrónico de confirmación al cliente + respaldo + notificación BD
                     correo_cliente = reserva.usuario.correo if reserva.usuario and reserva.usuario.correo else settings.EMAIL_HOST_USER
-                    asunto_correo = f"✅ Confirmación de Pago y Reserva #{reserva.id_reserva} - Cabañas Algarrobo Connect"
+                    monto_fmt = f"${int(round(float(amount))):,}".replace(",", ".") + " CLP"
+                    asunto_correo = f"✅ Confirmación de Pago y Reserva #{reserva.id_reserva} - Cabañas Algarrobo"
                     cuerpo_correo = (
                         f"Hola {reserva.usuario.nombre},\n\n"
                         f"¡Tu pago a través de Webpay Plus ha sido aprobado con éxito!\n\n"
                         f"Resumen de la Transacción:\n"
+                        f"• Reserva N°: #{reserva.id_reserva}\n"
                         f"• Orden de compra: {buy_order}\n"
                         f"• Código de Autorización Transbank: {auth_code}\n"
                         f"• Tarjeta: **** {card_last4}\n"
-                        f"• Monto Pagado: ${amount:,.0f} CLP\n"
+                        f"• Monto Pagado: {monto_fmt}\n"
                         f"• Cabaña: {reserva.cabana.nombre}\n"
+                        f"• Ubicación: {reserva.cabana.ubicacion}\n"
                         f"• Fecha de Entrada: {reserva.fecha_inicio}\n"
                         f"• Fecha de Salida: {reserva.fecha_fin}\n"
                         f"• Estado: Confirmada\n\n"
-                        f"¡Te esperamos en Cabañas Algarrobo Connect!"
+                        f"¡Te esperamos en Cabañas Algarrobo!"
+                    )
+                    html_correo = _construir_html_correo(
+                        titulo=f"Confirmación de Reserva #{reserva.id_reserva}",
+                        subtitulo=f"Hola {reserva.usuario.nombre}, tu pago a través de Webpay Plus ha sido aprobado con éxito y tu estadía está confirmada.",
+                        filas_detalle=[
+                            ('Reserva N°', f"#{reserva.id_reserva}"),
+                            ('Cabaña', reserva.cabana.nombre),
+                            ('Ubicación', reserva.cabana.ubicacion),
+                            ('Fecha de Entrada', str(reserva.fecha_inicio)),
+                            ('Fecha de Salida', str(reserva.fecha_fin)),
+                            ('Orden de Compra', buy_order),
+                            ('Código Autorización Transbank', auth_code),
+                            ('Tarjeta', f"**** **** **** {card_last4}"),
+                            ('Estado', 'Confirmada'),
+                            ('Monto Total Pagado', monto_fmt),
+                        ],
+                        badge_texto='✔ Pago Aprobado',
+                        badge_color='#16a34a'
                     )
                     despachar_correo_sistema(
                         asunto_correo,
                         cuerpo_correo,
                         correo_cliente,
-                        id_usuario=reserva.usuario.id_usuario if reserva.usuario else None
+                        id_usuario=reserva.usuario.id_usuario if reserva.usuario else None,
+                        html_cuerpo=html_correo
                     )
 
                     return render(request, 'vistas/webpay_voucher.html', {
@@ -757,9 +853,21 @@ def guardar_mensaje(request):
                 VALUES (%s, %s, %s)
             """, [nombre, correo, mensaje])
 
-        asunto_contacto = f'📩 Nuevo mensaje de contacto de {nombre}'
+        asunto_contacto = f'📩 Nuevo mensaje de contacto de {nombre} - Cabañas Algarrobo'
         cuerpo_contacto = f'Nombre: {nombre}\nCorreo: {correo}\n\nMensaje:\n{mensaje}'
-        despachar_correo_sistema(asunto_contacto, cuerpo_contacto, settings.EMAIL_HOST_USER)
+        html_contacto = _construir_html_correo(
+            titulo='Nuevo Mensaje de Contacto Web',
+            subtitulo='Has recibido una nueva consulta desde el formulario de Cabañas Algarrobo.',
+            filas_detalle=[
+                ('Nombre', nombre),
+                ('Correo del Remitente', correo),
+                ('Fecha de Recepción', timezone.now().strftime('%Y-%m-%d %H:%M')),
+            ],
+            texto_adicional=mensaje,
+            badge_texto='📩 Consulta Web',
+            badge_color='#0284c7'
+        )
+        despachar_correo_sistema(asunto_contacto, cuerpo_contacto, settings.EMAIL_HOST_USER, html_cuerpo=html_contacto)
 
         messages.success(request, '✅ Mensaje enviado correctamente.')
         return redirect('contacto')
