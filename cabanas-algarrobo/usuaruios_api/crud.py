@@ -12,7 +12,10 @@ def crear_usuario(db: Session, user: UsuarioCreate):
         nombre=user.nombre,
         correo=user.correo,
         contrasena=hashed,
-        rol=user.rol
+        rol=user.rol,
+        id_rol=3 if user.rol == 'cliente' else 1,
+        telefono=user.telefono,
+        id_comuna=1
     )
     db.add(nuevo)
     db.commit()

@@ -1,0 +1,190 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Perfil - Cabañas Algarrobo</title>
+  <link rel="stylesheet" href="{% static 'css/estilo.css' %}" />
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+  <style>
+    .perfil-card {
+      max-width: 640px;
+      margin: 35px auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 30px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+      text-align: left;
+    }
+    .perfil-card h2 {
+      margin-top: 0;
+      color: #004B87;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .perfil-sub {
+      text-align: center;
+      color: #64748b;
+      font-size: 13.5px;
+      margin-bottom: 22px;
+    }
+    .perfil-group {
+      margin-bottom: 14px;
+    }
+    .perfil-group label {
+      display: block;
+      font-weight: 700;
+      font-size: 13.5px;
+      color: #1e293b;
+      margin-bottom: 5px;
+    }
+    .perfil-group input,
+    .perfil-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .perfil-hint {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .perfil-divider {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 22px 0;
+    }
+    .perfil-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .btn-save {
+      flex: 1;
+      background: #004B87;
+      color: #ffffff;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-back {
+      background: #e2e8f0;
+      color: #1e293b;
+      text-decoration: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      text-align: center;
+    }
+    .alert-box {
+      padding: 11px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-weight: 600;
+      font-size: 13.5px;
+    }
+    .alert-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  </style>
+</head>
+<body class="login-body">
+
+  <header>
+    <div class="container-nav">
+      <div class="logo">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" />
+        <span>Cabañas Algarrobo</span>
+      </div>
+      <div class="menu-toggle" id="toggle">☰</div>
+      <nav id="menu">
+        <a href="{% url 'index' %}">Inicio</a>
+        <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        <a href="{% url 'panel_cliente' %}">Mi Panel</a>
+        <a href="{% url 'perfil_cliente' %}" class="activo">Mi Perfil</a>
+        <a href="{% url 'contacto' %}">Contacto</a>
+        <a href="{% url 'comentarios' %}">Comentarios</a>
+      </nav>
+      <a class="btn-login" href="{% url 'logout' %}">Cerrar Sesión</a>
+    </div>
+  </header>
+
+  <main style="padding: 16px;">
+    <div class="perfil-card">
+      <h2>👤 Mi Perfil</h2>
+      <p class="perfil-sub">Administra tus datos personales, número de WhatsApp y contraseña de acceso.</p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert-box {% if 'error' in message.tags %}alert-error{% else %}alert-success{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="perfil-group">
+          <label for="nombre">Nombre Completo</label>
+          <input type="text" id="nombre" name="nombre" value="{{ usuario.nombre }}" maxlength="50" required />
+        </div>
+
+        <div class="perfil-group">
+          <label for="correo">Correo Electrónico</label>
+          <input type="email" id="correo" name="correo" value="{{ usuario.correo }}" maxlength="100" required />
+        </div>
+
+        <div class="perfil-group">
+          <label for="telefono">Teléfono / WhatsApp</label>
+          <input type="tel" id="telefono" name="telefono" value="{{ usuario.telefono|default:'' }}" placeholder="+56912345678" maxlength="20" required />
+          <div class="perfil-hint">📱 A este número se asociarán las notificaciones y comprobantes vía WhatsApp de tus reservas.</div>
+        </div>
+
+        <div class="perfil-group">
+          <label for="id_comuna">Comuna de Residencia</label>
+          <select id="id_comuna" name="id_comuna">
+            {% for com in comunas %}
+              <option value="{{ com.id_comuna }}" {% if usuario.id_comuna == com.id_comuna %}selected{% endif %}>
+                {{ com.nombre }} ({{ com.provincia }}, {{ com.region }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <hr class="perfil-divider" />
+        <h3 style="margin-top:0; font-size:15px; color:#004B87;">🔒 Cambiar Contraseña (Opcional)</h3>
+
+        <div class="perfil-group">
+          <label for="nueva_contrasena">Nueva Contraseña</label>
+          <input type="password" id="nueva_contrasena" name="nueva_contrasena" placeholder="Dejar en blanco para mantener la actual" />
+        </div>
+
+        <div class="perfil-group">
+          <label for="confirmar_contrasena">Confirmar Nueva Contraseña</label>
+          <input type="password" id="confirmar_contrasena" name="confirmar_contrasena" placeholder="Repite la nueva contraseña" />
+        </div>
+
+        <div class="perfil-actions">
+          <button type="submit" class="btn-save">💾 Guardar Cambios</button>
+          <a href="{% url 'panel_cliente' %}" class="btn-back">← Volver a Mi Panel</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer class="footer-login">
+    <div style="height: 20px; background-color: #004B87;"></div>
+  </footer>
+
+  <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>

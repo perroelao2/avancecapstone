@@ -9,3 +9,6 @@ class Usuario(Base):
     correo = Column(String(100), unique=True, index=True)
     contrasena = Column(String(255))
     rol = Column(String(50))
+    id_rol = Column(Integer, nullable=True)
+    telefono = Column(String(20), nullable=True)
+    id_comuna = Column(Integer, nullable=True)

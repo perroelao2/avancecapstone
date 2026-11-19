@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 class UsuarioCreate(BaseModel):
@@ -5,6 +6,7 @@ class UsuarioCreate(BaseModel):
     correo: str
     contrasena: str
     rol: str = "cliente"
+    telefono: Optional[str] = None
 
 class UsuarioLogin(BaseModel):
     correo: str
@@ -20,6 +22,7 @@ class UsuarioOut(BaseModel):
     nombre: str
     correo: str
     rol: str
+    telefono: Optional[str] = None
 
     class Config:
         orm_mode = True

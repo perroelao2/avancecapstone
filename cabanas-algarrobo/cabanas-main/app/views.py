@@ -1,11 +1,14 @@
 import os
+import re
 import json
 import html
 import smtplib
+import bcrypt
 from datetime import date, datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
+from urllib.parse import quote
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -14,6 +17,41 @@ from django.conf import settings
 from django.db import connection
 
 from .models import Pago, Usuario, Cabana, Reserva, Comentario
+
+
+def _normalizar_telefono_whatsapp(telefono, id_usuario_fallback=0):
+    """Normaliza un número telefónico a formato +569XXXXXXXX o internacional; usa fallback si está vacío."""
+    digits = re.sub(r'\D', '', str(telefono or ''))
+    if not digits:
+        return ('+569' + str(id_usuario_fallback).zfill(8)) if id_usuario_fallback else ''
+    if len(digits) == 9 and digits.startswith('9'):
+        return '+56' + digits
+    if len(digits) == 8:
+        return '+569' + digits
+    return '+' + digits
+
+
+def _construir_whatsapp_url(telefono, mensaje):
+    """Construye la URL oficial api.whatsapp.com/send con el teléfono limpio y el mensaje codificado."""
+    digits = re.sub(r'\D', '', str(telefono or ''))
+    return f"https://api.whatsapp.com/send?phone={digits}&text={quote(str(mensaje or ''))}"
+
+
+def _registrar_whatsapp_reserva(reserva, mensaje):
+    """Registra una notificación en historial_mensajes_whatsapp usando el teléfono real de la BD."""
+    tel_real = _normalizar_telefono_whatsapp(
+        getattr(reserva.usuario, 'telefono', None),
+        getattr(reserva.usuario, 'id_usuario', 0)
+    )
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO historial_mensajes_whatsapp (telefono_destino, id_reserva, mensaje)
+                VALUES (%s, %s, %s)
+            """, [tel_real, reserva.id_reserva, mensaje])
+    except Exception as e:
+        print("Error logging whatsapp notification:", e)
+    return tel_real, _construir_whatsapp_url(tel_real, mensaje)
 
 
 def _construir_html_correo(titulo, subtitulo, filas_detalle, texto_adicional='', badge_texto='Confirmado', badge_color='#16a34a'):
@@ -274,8 +312,8 @@ def _calcular_monto_reserva(reserva):
 
 
 def _obtener_detalles_reservas_usuario(id_usuario):
-    """Retorna todas las reservas del cliente con huéspedes, servicios y último estado de pago."""
-    reservas_qs = Reserva.objects.filter(usuario_id=id_usuario).select_related('cabana').order_by('-id_reserva')
+    """Retorna todas las reservas del cliente con huéspedes, servicios, último pago y enlace WhatsApp."""
+    reservas_qs = Reserva.objects.filter(usuario_id=id_usuario).select_related('cabana', 'usuario').order_by('-id_reserva')
     resultado = []
     if not reservas_qs:
         return resultado
@@ -317,6 +355,11 @@ def _obtener_detalles_reservas_usuario(id_usuario):
 
             noches = max(1, (res.fecha_fin - res.fecha_inicio).days)
             monto_calc = _calcular_monto_reserva(res)
+            tel_wa = _normalizar_telefono_whatsapp(res.usuario.telefono, res.usuario.id_usuario)
+            msg_wa = (
+                f"Hola! Soy {res.usuario.nombre}, consulto por mi Reserva #{res.id_reserva} "
+                f"en {res.cabana.nombre} ({res.fecha_inicio} al {res.fecha_fin}) - Total: ${monto_calc:,} CLP."
+            )
             resultado.append({
                 'reserva': res,
                 'noches': noches,
@@ -325,6 +368,8 @@ def _obtener_detalles_reservas_usuario(id_usuario):
                 'total_personas': 1 + len(huespedes),
                 'servicios': servicios,
                 'pago': pago_info,
+                'telefono_whatsapp': tel_wa,
+                'whatsapp_url': _construir_whatsapp_url(tel_wa, msg_wa),
             })
     return resultado
 
@@ -549,6 +594,12 @@ def reservar_cabana(request, id_cabana):
                         [nueva_reserva.id_reserva, sid, cant, sub]
                     )
 
+            _registrar_whatsapp_reserva(
+                nueva_reserva,
+                f"¡Hola {usuario.nombre}! Registramos tu Reserva #{nueva_reserva.id_reserva} en {cabana.nombre} "
+                f"({f_ini} al {f_fin}) por ${int(monto_total):,} CLP. Estado: Pendiente de pago."
+            )
+
             messages.success(request, f"Reserva #{nueva_reserva.id_reserva} creada (${int(monto_total):,} CLP). Completa tu pago para confirmarla.")
             return redirect(f"/pago-transferencia/?reserva_id={nueva_reserva.id_reserva}")
 
@@ -755,20 +806,12 @@ def retorno_pago_webpay(request):
                         observaciones=f"Webpay Aut: {auth_code} | Tarjeta: ****{card_last4}"
                     )
 
-                    # Registrar notificación automática de WhatsApp
-                    try:
-                        clean_tel = '+569' + str(reserva.usuario.id_usuario).zfill(8)
-                        with connection.cursor() as cursor:
-                            cursor.execute("""
-                                INSERT INTO historial_mensajes_whatsapp (telefono_destino, id_reserva, mensaje)
-                                VALUES (%s, %s, %s)
-                            """, [
-                                clean_tel,
-                                reserva.id_reserva,
-                                f"¡Hola {reserva.usuario.nombre}! Tu pago de ${amount} con Webpay Plus fue aprobado (Cod Aut: {auth_code}). Tu reserva #{reserva.id_reserva} en {reserva.cabana.nombre} está Confirmada."
-                            ])
-                    except Exception as e:
-                        print("Error logging whatsapp notification:", e)
+                    # Registrar notificación automática de WhatsApp usando teléfono real de la BD
+                    msg_wa_pago = (
+                        f"¡Hola {reserva.usuario.nombre}! Tu pago de ${amount} con Webpay Plus fue aprobado "
+                        f"(Cod Aut: {auth_code}). Tu reserva #{reserva.id_reserva} en {reserva.cabana.nombre} está Confirmada."
+                    )
+                    telefono_whatsapp, whatsapp_url = _registrar_whatsapp_reserva(reserva, msg_wa_pago)
 
                     # Enviar correo electrónico de confirmación al cliente + respaldo + notificación BD
                     correo_cliente = reserva.usuario.correo if reserva.usuario and reserva.usuario.correo else settings.EMAIL_HOST_USER
@@ -821,7 +864,9 @@ def retorno_pago_webpay(request):
                         'buy_order': buy_order,
                         'auth_code': auth_code,
                         'card_last4': card_last4,
-                        'amount': amount
+                        'amount': amount,
+                        'telefono_whatsapp': telefono_whatsapp,
+                        'whatsapp_url': whatsapp_url,
                     })
             else:
                 messages.error(request, f"❌ Transacción rechazada por el banco emisor (Código: {data.get('response_code')}).")
@@ -905,16 +950,83 @@ def comentarios(request):
     })
 
 
+# Perfil de cliente (visualización y edición de datos personales + WhatsApp)
+def perfil_cliente(request):
+    usuario_id = request.session.get('usuario_id')
+    if not usuario_id:
+        messages.warning(request, "Debes iniciar sesión para editar tu perfil.")
+        return redirect('login')
+
+    usuario = get_object_or_404(Usuario, id_usuario=usuario_id)
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT c.id_comuna, c.nombre, p.nombre, r.nombre
+            FROM comunas c
+            JOIN provincias p ON c.id_provincia = p.id_provincia
+            JOIN regiones r ON p.id_region = r.id_region
+            ORDER BY c.nombre
+        """)
+        comunas = [
+            {'id_comuna': row[0], 'nombre': row[1], 'provincia': row[2], 'region': row[3]}
+            for row in cursor.fetchall()
+        ]
+
+    if request.method == 'POST':
+        nombre = (request.POST.get('nombre') or '').strip()
+        correo = (request.POST.get('correo') or '').strip()
+        telefono_raw = (request.POST.get('telefono') or '').strip()
+        id_comuna_str = (request.POST.get('id_comuna') or '').strip()
+        nueva_pass = request.POST.get('nueva_contrasena') or ''
+        conf_pass = request.POST.get('confirmar_contrasena') or ''
+
+        if not nombre or not correo:
+            messages.error(request, "❌ El nombre y el correo electrónico son obligatorios.")
+        elif Usuario.objects.filter(correo=correo).exclude(id_usuario=usuario.id_usuario).exists():
+            messages.error(request, "❌ Ese correo electrónico ya está registrado por otra cuenta.")
+        elif nueva_pass and nueva_pass != conf_pass:
+            messages.error(request, "❌ Las contraseñas nuevas no coinciden.")
+        else:
+            telefono_norm = _normalizar_telefono_whatsapp(telefono_raw) if telefono_raw else None
+            if telefono_raw and not telefono_norm:
+                messages.error(request, "❌ Ingresa un número de teléfono válido (ej: +56912345678).")
+            else:
+                usuario.nombre = nombre[:50]
+                usuario.correo = correo[:100]
+                usuario.telefono = telefono_norm[:20] if telefono_norm else None
+                if id_comuna_str.isdigit():
+                    usuario.id_comuna = int(id_comuna_str)
+                if nueva_pass:
+                    hashed = bcrypt.hashpw(nueva_pass.encode(), bcrypt.gensalt(rounds=10)).decode()
+                    usuario.contrasena = hashed
+                usuario.save()
+
+                request.session['usuario_nombre'] = usuario.nombre
+                messages.success(request, "✅ Tus datos de perfil han sido actualizados correctamente.")
+                return redirect('perfil_cliente')
+
+    return render(request, 'vistas/perfil.html', {
+        'usuario': usuario,
+        'nombre': request.session.get('usuario_nombre', usuario.nombre),
+        'comunas': comunas,
+    })
+
+
 # Crear cuenta de cliente
 def crear_cuenta(request):
     if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        correo = request.POST.get('correo')
+        nombre = (request.POST.get('nombre') or '').strip()
+        correo = (request.POST.get('correo') or '').strip()
+        telefono_raw = (request.POST.get('telefono') or '').strip()
         contrasena1 = request.POST.get('contrasena1')
         contrasena2 = request.POST.get('contrasena2')
 
         if contrasena1 != contrasena2:
             messages.error(request, "Las contraseñas no coinciden.")
+            return render(request, 'vistas/crear_cuenta.html')
+
+        telefono = _normalizar_telefono_whatsapp(telefono_raw) if telefono_raw else None
+        if not telefono:
+            messages.error(request, "Ingresa un número de teléfono válido para notificaciones WhatsApp (ej: +56912345678).")
             return render(request, 'vistas/crear_cuenta.html')
 
         try:
@@ -924,12 +1036,19 @@ def crear_cuenta(request):
                     "nombre": nombre,
                     "correo": correo,
                     "contrasena": contrasena1,
-                    "rol": "cliente"
+                    "rol": "cliente",
+                    "telefono": telefono
                 },
                 timeout=5
             )
 
             if registro_resp.status_code == 200:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE usuarios SET telefono = %s, id_rol = COALESCE(id_rol, 3), id_comuna = COALESCE(id_comuna, 1) WHERE correo = %s",
+                        [telefono, correo]
+                    )
+
                 login_resp = requests.post(
                     "http://127.0.0.1:8001/usuarios/login",
                     json={

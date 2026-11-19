@@ -6,6 +6,9 @@ class Usuario(models.Model):
     correo = models.CharField(unique=True, max_length=100)
     contrasena = models.CharField(max_length=100)
     rol = models.CharField(max_length=20)
+    id_rol = models.IntegerField(default=3, null=True, blank=True)
+    telefono = models.CharField(max_length=20, null=True, blank=True)
+    id_comuna = models.IntegerField(default=1, null=True, blank=True)
 
     class Meta:
         db_table = 'usuarios'

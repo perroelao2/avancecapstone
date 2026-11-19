@@ -29,6 +29,10 @@
       <nav id="menu">
         <a href="{% url 'index' %}">Inicio</a>
         <a href="{% url 'ver_cabanas' %}">Cabañas</a>
+        {% if nombre %}
+        <a href="{% url 'panel_cliente' %}">Mi Panel</a>
+        <a href="{% url 'perfil_cliente' %}">Mi Perfil</a>
+        {% endif %}
         <a href="{% url 'contacto' %}">Contacto</a>
         <a href="{% url 'comentarios' %}" class="activo">Comentarios</a>
       </nav>

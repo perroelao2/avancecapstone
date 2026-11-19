@@ -97,12 +97,19 @@
             </div>
 
             <div style="margin-top: 30px; text-align: center;">
-                <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
-                    Se ha enviado un mensaje de confirmación por WhatsApp a tu número registrado.
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">
+                    Se ha registrado la notificación de WhatsApp asociada al número <strong>{{ telefono_whatsapp }}</strong>.
                 </p>
-                <a href="{% url 'panel_cliente' %}" style="display: inline-block; background-color: #004B87; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-                    Ir a Mis Reservas
-                </a>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    {% if whatsapp_url %}
+                    <a href="{{ whatsapp_url }}" target="_blank" style="display: inline-block; background-color: #25D366; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                        📱 Abrir Comprobante en WhatsApp ↗
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'panel_cliente' %}" style="display: inline-block; background-color: #004B87; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                        Ir a Mis Reservas
+                    </a>
+                </div>
             </div>
         </div>
     </main>
